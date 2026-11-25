@@ -32,3 +32,7 @@ If Orbit is useful to you, you can [buy me a coffee](https://buymeacoffee.com/da
 ## Credits
 
 See [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt) for the open-source components and icon set Orbit uses.
+
+## License
+
+Orbit is released under the [MIT License](LICENSE).
