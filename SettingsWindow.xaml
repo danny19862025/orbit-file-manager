@@ -1,0 +1,313 @@
+<Window x:Class="Orbit.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Settings" Width="780" Height="560" ResizeMode="NoResize"
+        WindowStyle="None" ShowInTaskbar="False" WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource ContentBg}" Foreground="{DynamicResource TextBrush}"
+        FontFamily="{StaticResource UiFont}" FontSize="13" UseLayoutRounding="True">
+  <WindowChrome.WindowChrome>
+    <WindowChrome CaptionHeight="48" ResizeBorderThickness="0" GlassFrameThickness="0" CornerRadius="0" UseAeroCaptionButtons="False"/>
+  </WindowChrome.WindowChrome>
+
+  <Window.Resources>
+    <Style x:Key="NavItem" TargetType="RadioButton">
+      <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+      <Setter Property="GroupName" Value="nav"/>
+      <Setter Property="Margin" Value="0,1"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="RadioButton">
+            <Border x:Name="Bd" Background="Transparent" CornerRadius="7" Padding="10,8">
+              <StackPanel Orientation="Horizontal">
+                <TextBlock Text="{TemplateBinding Tag}" FontFamily="{StaticResource IconFont}" FontSize="15" Width="26" VerticalAlignment="Center"/>
+                <ContentPresenter VerticalAlignment="Center"/>
+              </StackPanel>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource HoverBg}"/>
+              </Trigger>
+              <Trigger Property="IsChecked" Value="True">
+                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SelectedBg}"/>
+                <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <Style x:Key="H1" TargetType="TextBlock">
+      <Setter Property="FontSize" Value="20"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="Margin" Value="0,0,0,4"/>
+    </Style>
+    <Style x:Key="H2" TargetType="TextBlock">
+      <Setter Property="FontSize" Value="13.5"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="Foreground" Value="{DynamicResource SectionBrush}"/>
+      <Setter Property="Margin" Value="0,22,0,10"/>
+    </Style>
+    <Style x:Key="Sub" TargetType="TextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource MutedBrush}"/>
+      <Setter Property="TextWrapping" Value="Wrap"/>
+      <Setter Property="FontSize" Value="12.5"/>
+    </Style>
+    <Style x:Key="Row" TargetType="Border">
+      <Setter Property="Background" Value="{DynamicResource PanelBg}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource LineBrush}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="9"/>
+      <Setter Property="Padding" Value="14,12"/>
+      <Setter Property="Margin" Value="0,0,0,8"/>
+    </Style>
+  </Window.Resources>
+
+  <Border BorderBrush="{DynamicResource LineBrush}" BorderThickness="1">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="200"/>
+        <ColumnDefinition Width="*"/>
+      </Grid.ColumnDefinitions>
+
+      <!-- Navigation -->
+      <Border Background="{DynamicResource SidebarBg}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,1,0">
+        <StackPanel Margin="10,0,10,10">
+          <StackPanel Orientation="Horizontal" Height="48" Margin="6,0,0,6">
+            <TextBlock Text="&#xE713;" FontFamily="{StaticResource IconFont}" FontSize="16" VerticalAlignment="Center" Foreground="{DynamicResource AccentBrush}" Margin="0,0,10,0"/>
+            <TextBlock Text="Settings" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
+          </StackPanel>
+          <RadioButton x:Name="NavAppearance" Style="{StaticResource NavItem}" Tag="&#xE790;" Content="Appearance" IsChecked="True" Checked="Nav_Checked"/>
+          <RadioButton x:Name="NavIcons" Style="{StaticResource NavItem}" Tag="&#xE91B;" Content="Icons" Checked="Nav_Checked"/>
+          <RadioButton x:Name="NavGeneral" Style="{StaticResource NavItem}" Tag="&#xE80F;" Content="General" Checked="Nav_Checked"/>
+          <RadioButton x:Name="NavNetwork" Style="{StaticResource NavItem}" Tag="&#xE774;" Content="Network" Checked="Nav_Checked"/>
+          <RadioButton x:Name="NavShortcuts" Style="{StaticResource NavItem}" Tag="&#xE765;" Content="Shortcuts" Checked="Nav_Checked"/>
+          <RadioButton x:Name="NavAbout" Style="{StaticResource NavItem}" Tag="&#xE946;" Content="About" Checked="Nav_Checked"/>
+        </StackPanel>
+      </Border>
+
+      <!-- Pages -->
+      <Grid Grid.Column="1">
+        <Button Style="{StaticResource IconButton}" Content="&#xE711;" FontSize="11" HorizontalAlignment="Right" VerticalAlignment="Top"
+                Margin="0,8,8,0" Click="Close_Click" WindowChrome.IsHitTestVisibleInChrome="True" Panel.ZIndex="2"/>
+        <ScrollViewer x:Name="PageScroll" Margin="0,48,0,0" VerticalScrollBarVisibility="Auto" Focusable="False">
+          <Grid Margin="28,0,28,24">
+
+            <!-- Appearance -->
+            <StackPanel x:Name="PageAppearance">
+              <TextBlock Style="{StaticResource H1}" Text="Appearance"/>
+              <TextBlock Style="{StaticResource Sub}" Text="Changes apply instantly and are remembered."/>
+              <TextBlock Style="{StaticResource H2}" Text="Theme"/>
+              <WrapPanel x:Name="ThemeCards"/>
+              <TextBlock Style="{StaticResource H2}" Text="Window"/>
+              <Border Style="{StaticResource Row}">
+                <DockPanel>
+                  <CheckBox x:Name="TranslucentCheck" DockPanel.Dock="Right" Style="{StaticResource Check}" VerticalAlignment="Center" Click="Translucent_Click"/>
+                  <StackPanel>
+                    <TextBlock Text="Translucent window (Mica)"/>
+                    <TextBlock Style="{StaticResource Sub}" Text="Lets the Windows 11 acrylic blur show through the sidebar and toolbar."/>
+                  </StackPanel>
+                </DockPanel>
+              </Border>
+            </StackPanel>
+
+            <!-- General -->
+            <StackPanel x:Name="PageGeneral" Visibility="Collapsed">
+              <TextBlock Style="{StaticResource H1}" Text="General"/>
+              <TextBlock Style="{StaticResource H2}" Text="Browsing"/>
+              <Border Style="{StaticResource Row}">
+                <DockPanel>
+                  <CheckBox x:Name="HiddenCheck" DockPanel.Dock="Right" Style="{StaticResource Check}" VerticalAlignment="Center" Click="Hidden_Click"/>
+                  <StackPanel>
+                    <TextBlock Text="Show hidden items"/>
+                    <TextBlock Style="{StaticResource Sub}" Text="Shortcut: Ctrl+H"/>
+                  </StackPanel>
+                </DockPanel>
+              </Border>
+              <Border Style="{StaticResource Row}">
+                <DockPanel>
+                  <CheckBox x:Name="RestoreCheck" DockPanel.Dock="Right" Style="{StaticResource Check}" VerticalAlignment="Center" Click="Restore_Click"/>
+                  <StackPanel>
+                    <TextBlock Text="Reopen my tabs at startup"/>
+                    <TextBlock Style="{StaticResource Sub}" Text="Otherwise Orbit starts in your Home folder."/>
+                  </StackPanel>
+                </DockPanel>
+              </Border>
+              <TextBlock Style="{StaticResource H2}" Text="Sidebar"/>
+              <TextBlock Style="{StaticResource Sub}" Text="Choose which sections appear in the sidebar. Places is always shown." Margin="0,-4,0,10"/>
+              <StackPanel x:Name="SidebarRows"/>
+              <TextBlock Style="{StaticResource H2}" Text="View"/>
+              <Border Style="{StaticResource Row}">
+                <DockPanel>
+                  <Border DockPanel.Dock="Right" Background="{DynamicResource ContentBg}" CornerRadius="9" Padding="2">
+                    <StackPanel Orientation="Horizontal">
+                      <RadioButton x:Name="ViewGrid" Style="{StaticResource Seg}" Content="Grid" GroupName="view" Click="View_Click"/>
+                      <RadioButton x:Name="ViewDetails" Style="{StaticResource Seg}" Content="Details" GroupName="view" Click="View_Click"/>
+                      <RadioButton x:Name="ViewColumns" Style="{StaticResource Seg}" Content="Columns" GroupName="view" Click="View_Click"/>
+                      <RadioButton x:Name="ViewTree" Style="{StaticResource Seg}" Content="Tree" GroupName="view" Click="View_Click"/>
+                    </StackPanel>
+                  </Border>
+                  <TextBlock Text="Layout" VerticalAlignment="Center"/>
+                </DockPanel>
+              </Border>
+              <Border Style="{StaticResource Row}">
+                <DockPanel>
+                  <Border DockPanel.Dock="Right" Background="{DynamicResource ContentBg}" CornerRadius="9" Padding="2">
+                    <StackPanel Orientation="Horizontal">
+                      <RadioButton x:Name="SortName" Style="{StaticResource Seg}" Content="Name" GroupName="sort" Tag="name" Click="Sort_Click"/>
+                      <RadioButton x:Name="SortDate" Style="{StaticResource Seg}" Content="Date" GroupName="sort" Tag="date" Click="Sort_Click"/>
+                      <RadioButton x:Name="SortSize" Style="{StaticResource Seg}" Content="Size" GroupName="sort" Tag="size" Click="Sort_Click"/>
+                      <RadioButton x:Name="SortType" Style="{StaticResource Seg}" Content="Type" GroupName="sort" Tag="type" Click="Sort_Click"/>
+                    </StackPanel>
+                  </Border>
+                  <TextBlock Text="Sort by" VerticalAlignment="Center"/>
+                </DockPanel>
+              </Border>
+              <Border Style="{StaticResource Row}">
+                <DockPanel>
+                  <CheckBox x:Name="DescCheck" DockPanel.Dock="Right" Style="{StaticResource Check}" VerticalAlignment="Center" Click="Desc_Click"/>
+                  <TextBlock Text="Sort descending" VerticalAlignment="Center"/>
+                </DockPanel>
+              </Border>
+            </StackPanel>
+
+            <!-- Network -->
+            <StackPanel x:Name="PageNetwork" Visibility="Collapsed">
+              <TextBlock Style="{StaticResource H1}" Text="Network"/>
+              <TextBlock Style="{StaticResource Sub}" Text="Saved servers live in the sidebar's Network section — right-click one to edit, disconnect or remove it."/>
+              <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
+                <Button Style="{StaticResource DlgButton}" Content="Connect to server…" Click="Connect_Click"/>
+                <Button Style="{StaticResource DlgButton}" Content="Re-detect cloud folders" Margin="10,0,0,0" Click="Redetect_Click"/>
+              </StackPanel>
+              <TextBlock Style="{StaticResource H2}" Text="Trusted SSH servers"/>
+              <TextBlock Style="{StaticResource Sub}" Margin="0,0,0,10"
+                         Text="Orbit remembers each server's identity the first time you connect and warns you if it changes. Forget a server if it was reinstalled."/>
+              <StackPanel x:Name="KnownHostsPanel"/>
+            </StackPanel>
+
+            <!-- Icons -->
+            <StackPanel x:Name="PageIcons" Visibility="Collapsed">
+              <TextBlock Style="{StaticResource H1}" Text="Icons"/>
+              <TextBlock Style="{StaticResource Sub}" Text="Choose how files and folders look. More icon packs will be added here."/>
+              <TextBlock Style="{StaticResource H2}" Text="Icon pack"/>
+              <WrapPanel x:Name="IconCards"/>
+              <TextBlock Style="{StaticResource H2}" Text="Previews"/>
+              <Border Style="{StaticResource Row}">
+                <DockPanel>
+                  <CheckBox x:Name="ThumbCheck" DockPanel.Dock="Right" Style="{StaticResource Check}" VerticalAlignment="Center" Click="Thumb_Click"/>
+                  <StackPanel>
+                    <TextBlock Text="Keep photo and video thumbnails"/>
+                    <TextBlock Style="{StaticResource Sub}" Text="With an icon pack on, pictures and videos still show a preview in Grid view."/>
+                  </StackPanel>
+                </DockPanel>
+              </Border>
+            </StackPanel>
+
+            <!-- Shortcuts -->
+            <StackPanel x:Name="PageShortcuts" Visibility="Collapsed">
+              <DockPanel>
+                <Button DockPanel.Dock="Right" Style="{StaticResource DlgButton}" Content="Reset all" VerticalAlignment="Center" Click="ResetKeys_Click"/>
+                <TextBlock Style="{StaticResource H1}" Text="Keyboard shortcuts"/>
+              </DockPanel>
+              <TextBlock Style="{StaticResource Sub}" Text="Click a shortcut, then press the new keys. Esc cancels, Backspace removes it."/>
+              <TextBlock x:Name="KeyNote" Style="{StaticResource Sub}" Foreground="{DynamicResource AccentBrush}" Margin="0,6,0,0" Visibility="Collapsed"/>
+              <StackPanel x:Name="ShortcutRows" Margin="0,4,0,0"/>
+              <TextBlock Style="{StaticResource H2}" Text="Always the same"/>
+              <ItemsControl x:Name="FixedList">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <DockPanel Margin="0,0,0,6">
+                      <Border DockPanel.Dock="Right" Background="{DynamicResource PanelBg}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="1" CornerRadius="5" Padding="8,2">
+                        <TextBlock Text="{Binding Item2}" FontFamily="Cascadia Mono, Consolas" FontSize="12"/>
+                      </Border>
+                      <TextBlock Text="{Binding Item1}" VerticalAlignment="Center"/>
+                    </DockPanel>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+
+            <!-- About -->
+            <StackPanel x:Name="PageAbout" Visibility="Collapsed">
+              <!-- animated logo: a planet orbiting the Orbit mark -->
+              <Border Style="{StaticResource Row}" Padding="24,22" Margin="0,4,0,8">
+                <DockPanel>
+                  <Grid Width="104" Height="104" Margin="0,0,24,0" VerticalAlignment="Center">
+                    <Ellipse x:Name="LogoGlow" Width="70" Height="70" Fill="{DynamicResource AccentBrush}" Opacity="0.18">
+                      <Ellipse.Effect>
+                        <BlurEffect Radius="22"/>
+                      </Ellipse.Effect>
+                    </Ellipse>
+                    <Ellipse Width="96" Height="96" Stroke="{DynamicResource LineBrush}" StrokeThickness="1.5" StrokeDashArray="2 3"/>
+                    <Border Width="44" Height="44" CornerRadius="13" Background="{DynamicResource AccentBrush}">
+                      <Ellipse Width="16" Height="16" Fill="{DynamicResource PanelBg}"/>
+                    </Border>
+                    <Canvas Width="104" Height="104" RenderTransformOrigin="0.5,0.5">
+                      <Canvas.RenderTransform>
+                        <RotateTransform x:Name="OrbitSpin"/>
+                      </Canvas.RenderTransform>
+                      <Ellipse Canvas.Left="45" Canvas.Top="-1" Width="14" Height="14" Fill="{DynamicResource SelBorderBrush}"
+                               Stroke="{DynamicResource PanelBg}" StrokeThickness="2"/>
+                    </Canvas>
+                  </Grid>
+                  <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="Orbit" FontSize="26" FontWeight="SemiBold"/>
+                    <TextBlock x:Name="VersionText" Style="{StaticResource Sub}" FontSize="13"/>
+                    <TextBlock Style="{StaticResource Sub}" Text="A fast, modern file manager for Windows." Margin="0,2,0,0"/>
+                  </StackPanel>
+                </DockPanel>
+              </Border>
+
+              <TextBlock Style="{StaticResource H2}" Text="Updates"/>
+              <Border Style="{StaticResource Row}">
+                <DockPanel>
+                  <Button x:Name="UpdateBtn" DockPanel.Dock="Right" Style="{StaticResource DlgButton}" Content="Check for updates"
+                          VerticalAlignment="Center" Click="CheckUpdate_Click"/>
+                  <StackPanel VerticalAlignment="Center">
+                    <TextBlock x:Name="UpdateTitle" Text="Check whether a newer Orbit is available"/>
+                    <TextBlock x:Name="UpdateText" Style="{StaticResource Sub}" Text="Looks at the latest release on GitHub."/>
+                  </StackPanel>
+                </DockPanel>
+              </Border>
+
+              <TextBlock Style="{StaticResource H2}" Text="Project"/>
+              <WrapPanel>
+                <Button x:Name="RepoBtn" Style="{StaticResource DlgButton}" Margin="0,0,10,10" Click="Repo_Click">
+                  <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="&#xE943;" FontFamily="{StaticResource IconFont}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <TextBlock Text="GitHub repository"/>
+                  </StackPanel>
+                </Button>
+                <Button x:Name="IssueBtn" Style="{StaticResource DlgButton}" Margin="0,0,10,10" Click="Issue_Click">
+                  <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="&#xE939;" FontFamily="{StaticResource IconFont}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <TextBlock Text="Report a bug"/>
+                  </StackPanel>
+                </Button>
+                <Button x:Name="CoffeeBtn" Style="{StaticResource DlgButton}" Margin="0,0,10,10" Click="Coffee_Click"
+                        Background="#FFDD00" BorderBrush="#FFDD00" Foreground="#1B1B1B" FontWeight="SemiBold">
+                  <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="☕" FontFamily="Segoe UI Emoji" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <TextBlock Text="Buy me a coffee"/>
+                  </StackPanel>
+                </Button>
+                <Button Style="{StaticResource DlgButton}" Margin="0,0,10,10" Content="Open settings folder" Click="OpenData_Click"/>
+              </WrapPanel>
+              <TextBlock x:Name="LinksHint" Style="{StaticResource Sub}" Visibility="Collapsed"
+                         Text="Repository and coffee links aren't set yet — fill them in at the top of AppInfo.cs."/>
+
+              <TextBlock Style="{StaticResource H2}" Text="Credits"/>
+              <TextBlock Style="{StaticResource Sub}" LineHeight="20">
+                SSH.NET — SFTP support (MIT)<LineBreak/>
+                Material Icon Theme by Philipp Kief and contributors — file icons (MIT)<LineBreak/>
+                SharpVectors — SVG rendering (BSD-3-Clause)<LineBreak/>
+                Catppuccin, Tokyo Night, Rosé Pine and Nord — colour palettes (MIT)<LineBreak/>
+                Segoe Fluent Icons — interface icons (Windows)
+              </TextBlock>
+            </StackPanel>
+          </Grid>
+        </ScrollViewer>
+      </Grid>
+    </Grid>
+  </Border>
+</Window>
