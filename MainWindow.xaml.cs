@@ -138,6 +138,7 @@ public partial class MainWindow : Window
         TabArea.SizeChanged += (_, _) => FitTabs();
         SizeChanged += (_, _) => FitTabs();
         Loaded += OnLoaded;
+        PrepareIntro();
         Closing += OnClosing;
         StateChanged += (_, _) => UpdateMaxState();
         SourceInitialized += (_, _) => { ApplyDwm(); UpdateMaxState(); };
@@ -149,6 +150,7 @@ public partial class MainWindow : Window
     // =====================================================================
     void OnLoaded(object sender, RoutedEventArgs e)
     {
+        PlayIntro();
         IconService.Scale = VisualTreeHelper.GetDpi(this).DpiScaleX;
         SwitchTo(startTab);
         RestoreSplit();
