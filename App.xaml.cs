@@ -21,6 +21,7 @@ public partial class App : Application
 
         AppSettings.Load();
         Themes.Apply(AppSettings.Current.Theme, AppSettings.Current.Translucent ? AppSettings.Current.Transparency : 0);
+        Glass.Register(); // Settings and dialogs share the main window's glass
         IconService.Init(Dispatcher);
 
         // Orbit.exe [folder or file]           — open there (a file is selected in its folder)
