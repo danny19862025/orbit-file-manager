@@ -55,7 +55,7 @@ public partial class MainWindow
     /// <summary>Fixed keys that aren't reassignable (shown for reference in Settings).</summary>
     public static readonly (string Label, string Keys)[] FixedShortcuts =
     {
-        ("Open the selected item", "Enter"), ("Back", "Backspace / mouse back button"), ("Clear selection or filter", "Esc"),
+        ("Open the selected item", "Enter"), ("Back", "Backspace / Mouse back"), ("Clear selection or filter", "Esc"),
         ("Context menu", "Menu key / Shift+F10"), ("Open folder in a new tab", "Middle-click"), ("Box-select", "Drag on empty space"),
         ("Copy / move while dragging", "Hold Ctrl / Shift"),
     };
