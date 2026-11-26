@@ -24,6 +24,11 @@ public partial class MainWindow
     {
         if (Directory.Exists(path)) Navigate(path);
         else if (File.Exists(path)) Navigate(Path.GetDirectoryName(path), path);
+        else { Toast("That item isn't there any more"); return; }
+        // bring Orbit to the front so the result is actually visible
+        if (WindowState == WindowState.Minimized) WindowState = WindowState.Normal;
+        Activate();
+        ActiveList?.Focus();
     }
 
     internal void ToastFromSpace(string msg) => Toast(msg);

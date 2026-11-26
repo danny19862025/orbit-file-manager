@@ -40,8 +40,22 @@ public partial class SpaceWindow : Window
     public SpaceWindow(MainWindow owner, string path)
     {
         InitializeComponent();
-        Owner = owner;
+        // Not an owned window: an owned window always sits on top of Orbit, which hid "Show in Orbit"'s result.
+        // It gets its own taskbar button instead, opens centred over Orbit, and closes with it.
         main = owner;
+        ShowInTaskbar = true;
+        Icon = owner.Icon;
+        WindowStartupLocation = WindowStartupLocation.Manual;
+        if (owner.WindowState != WindowState.Minimized)
+        {
+            var area = SystemParameters.WorkArea;
+            Left = Math.Max(area.Left, owner.Left + (owner.ActualWidth - Width) / 2);
+            Top = Math.Max(area.Top, owner.Top + (owner.ActualHeight - Height) / 2);
+        }
+        else WindowStartupLocation = WindowStartupLocation.CenterScreen;
+        EventHandler closeWithOrbit = (_, _) => Close();
+        owner.Closed += closeWithOrbit;
+        Closed += (_, _) => owner.Closed -= closeWithOrbit;
         root = path;
         Loaded += (_, _) => Scan();
         Closed += (_, _) => cts?.Cancel();
