@@ -597,7 +597,7 @@ public partial class MainWindow : Window
                 menu.Items.Add(MI("Open in Terminal", "", () => Try(() => Shell.OpenTerminal(s.Path))));
                 menu.Items.Add(MI("Open in Explorer", "", () => Try(() => Shell.OpenInExplorer(s.Path))));
                 menu.Items.Add(new Separator());
-                menu.Items.Add(MI("Properties", "", () => Shell.Properties(s.Path, Hwnd)));
+                menu.Items.Add(MI("Properties", "", () => ShowPropertiesFor(s.Path)));
             }
             else
             {
@@ -2072,6 +2072,17 @@ public partial class MainWindow : Window
         new PropertiesWindow(this, sel).Show();
     }
 
+    /// <summary>Orbit's own Properties window for a path (themed and translucent like the rest of Orbit);
+    /// the Windows dialog is one click away inside it, and is used directly for things Orbit can't describe.</summary>
+    void ShowPropertiesFor(string path)
+    {
+        // a whole drive is better served by Windows' own dialog (used / free space chart) than by counting every file
+        bool driveRoot = path != null && !IsTag(path) && !IsRemote(path) && IOPath.GetPathRoot(path)?.TrimEnd('\\') == path.TrimEnd('\\');
+        var item = path == null || driveRoot || IsTag(path) || IsRemote(path) ? null : FileItem.TryFromPath(path);
+        if (item != null) new PropertiesWindow(this, new List<FileItem> { item }).Show();
+        else ShowWindowsProperties(path);
+    }
+
     internal void ShowWindowsProperties(string path)
     {
         if (path != null && !IsTag(path) && !IsRemote(path)) Shell.Properties(path, Hwnd);
@@ -2192,7 +2203,7 @@ public partial class MainWindow : Window
                 menu.Items.Add(MI("Open in Terminal", "", () => Shell.OpenTerminal(current.Path)));
                 menu.Items.Add(MI("Open in Explorer", "", () => Shell.OpenInExplorer(current.Path)));
                 menu.Items.Add(new Separator());
-                menu.Items.Add(MI("Properties", "", () => Shell.Properties(current.Path, Hwnd), "Alt+Enter"));
+                menu.Items.Add(MI("Properties", "", () => ShowPropertiesFor(current.Path), "Alt+Enter"));
             }
         }
         else
