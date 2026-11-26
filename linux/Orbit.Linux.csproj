@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Orbit for Linux (Avalonia). The Windows app (../Orbit.csproj, WPF) is a separate project and doesn't build this folder. -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>orbit</AssemblyName>
+    <RootNamespace>Orbit</RootNamespace>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Version>1.0.0</Version>
+    <Product>Orbit File Manager</Product>
+    <Description>A fast, modern file manager</Description>
+    <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
+    <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <ApplicationIcon />
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>$(NoWarn);CS1998;CS4014;AVLN3001</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.3.23" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.23" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.23" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.23" />
+    <PackageReference Include="Svg.Skia" Version="3.0.6" />
+    <PackageReference Include="SharpCompress" Version="0.50.12" />
+    <PackageReference Include="SSH.NET" Version="2026.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Platform-neutral files shared unchanged with the Windows app -->
+    <Compile Include="../AppInfo.cs" Link="Shared/AppInfo.cs" />
+    <Compile Include="../Freedesktop.cs" Link="Shared/Freedesktop.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets/Fonts/OrbitIcons.ttf" />
+    <AvaloniaResource Include="Assets/orbit.png" />
+    <!-- the same icon packs as the Windows app, read from the repository's Assets folder -->
+    <EmbeddedResource Include="../Assets/material-icons.json" LogicalName="Orbit.material-icons.json" />
+    <None Include="../Assets/icons/**/*" Link="icons/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../LICENSE" Link="LICENSE" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../THIRD-PARTY-NOTICES.txt" Link="THIRD-PARTY-NOTICES.txt" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Assets/Fonts/FluentSystemIcons-LICENSE.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

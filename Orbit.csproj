@@ -14,12 +14,14 @@
     <Product>Orbit File Manager</Product>
   </PropertyGroup>
 
-  <!-- the installer and release output are separate projects / folders -->
+  <!-- the installer, the Linux app (linux\, Avalonia) and release output are separate projects / folders -->
   <ItemGroup>
-    <Compile Remove="installer\**;dist\**" />
-    <None Remove="installer\**;dist\**" />
-    <EmbeddedResource Remove="installer\**;dist\**" />
-    <Page Remove="installer\**;dist\**" />
+    <Compile Remove="installer\**;dist\**;linux\**" />
+    <None Remove="installer\**;dist\**;linux\**" />
+    <EmbeddedResource Remove="installer\**;dist\**;linux\**" />
+    <Page Remove="installer\**;dist\**;linux\**" />
+    <Resource Remove="linux\**" />
+    <AvaloniaResource Remove="linux\**" />
   </ItemGroup>
 
   <ItemGroup>

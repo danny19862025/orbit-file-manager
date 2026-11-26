@@ -1,0 +1,21 @@
+[Desktop Entry]
+Type=Application
+Name=Orbit
+GenericName=File Manager
+Comment=A fast, modern file manager
+Exec=@BIN@ %U
+Icon=orbit-file-manager
+Terminal=false
+Categories=System;FileTools;FileManager;Utility;
+MimeType=inode/directory;
+Keywords=files;folders;explorer;browser;
+StartupWMClass=orbit
+Actions=NewWindow;Trash;
+
+[Desktop Action NewWindow]
+Name=New Window
+Exec=@BIN@
+
+[Desktop Action Trash]
+Name=Open the Trash
+Exec=@BIN@ trash:///

@@ -2,7 +2,7 @@
 
 # Orbit
 
-**A fast, modern file manager for Windows 10 and 11.**
+**A fast, modern file manager for Windows 10 and 11 — and Linux.**
 Tabs, four views, instant search, previews, archives, split panes, network drives, themes and icon packs — in one calm, keyboard-friendly window.
 
 [**🌐 Visit the Orbit Website**](https://danny19862025.github.io/orbit-file-manager/) · [**⬇ Download the latest release**](https://github.com/danny19862025/orbit-file-manager/releases/latest) · [Report a bug](https://github.com/danny19862025/orbit-file-manager/issues) · [Buy me a coffee](https://buymeacoffee.com/danny1986)
@@ -36,6 +36,7 @@ Download from the [Releases page](https://github.com/danny19862025/orbit-file-ma
 | **`OrbitSetup-<version>.exe`** | The installer — recommended. |
 | `Orbit-<version>-win-x64.zip` | Portable copy: unzip anywhere and run `Orbit.exe`. Nothing is installed. |
 | `SHA256SUMS.txt` | Checksums, if you want to verify your download. |
+| `Orbit-<version>-linux-x64.tar.gz` | **Linux** — unpack and run `./install.sh`. See [Orbit for Linux](linux/README.md). |
 
 **Requirements:** Windows 10 (version 1903 or later) or Windows 11, 64-bit. Nothing else — both downloads include everything Orbit needs, so you don't have to install .NET.
 
@@ -52,6 +53,12 @@ The installer:
 > *“Windows protected your PC”*. Click **More info › Run anyway**. You can check the file against `SHA256SUMS.txt` first.
 
 Silent install (for scripts): `OrbitSetup-<version>.exe /quiet` — add `/dir="D:\Apps\Orbit"` to choose the folder and `/desktop` for a desktop shortcut.
+
+### Linux
+
+Orbit runs on Linux too (KDE Plasma, GNOME and others, x64 or arm64) — the same app with Linux doing the jobs Windows' shell does:
+the freedesktop Trash, mounted drives with Eject, GVfs for SMB / WebDAV, your desktop's icon theme, mpv for media previews.
+Download the `linux-x64` tarball, then `./install.sh` (no root needed). Details and what's different: **[Orbit for Linux](linux/README.md)**.
 
 ## Update
 
@@ -399,6 +406,8 @@ pwsh -File tools\build-release.ps1
 
 The installer (`installer\`) is a small .NET Framework 4.8 app, so it runs on any Windows 10/11 without installing anything. `tools\make-icon.ps1` redraws the app icon (`Assets\orbit.ico`).
 
+**Linux:** `dotnet run --project linux`, and `linux/build-release.sh` for the tarball — see [linux/README.md](linux/README.md).
+
 ### Project layout
 
 | | |
@@ -409,6 +418,7 @@ The installer (`installer\`) is a small .NET Framework 4.8 app, so it runs on an
 | `Archives.cs`, `FolderLock.cs`, `Converter.cs`, `RecycleBin.cs`, `Network.cs`, `SearchIndex.cs` | Archives, locked folders, conversion, Recycle Bin, network and cloud, search index. |
 | `*Window.xaml` | Settings, Properties, Connect, Convert, Lock and Disk space windows. |
 | `installer\` | `OrbitSetup.exe`. |
+| `linux\` | Orbit for Linux (Avalonia) — a separate project the Windows build never touches. |
 
 ---
 
