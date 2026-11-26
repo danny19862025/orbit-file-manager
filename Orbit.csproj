@@ -14,6 +14,14 @@
     <Product>Orbit File Manager</Product>
   </PropertyGroup>
 
+  <!-- the installer and release output are separate projects / folders -->
+  <ItemGroup>
+    <Compile Remove="installer\**;dist\**" />
+    <None Remove="installer\**;dist\**" />
+    <EmbeddedResource Remove="installer\**;dist\**" />
+    <Page Remove="installer\**;dist\**" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="SharpCompress" Version="0.50.12" />
     <PackageReference Include="SharpVectors.Wpf" Version="1.8.6" />
@@ -25,6 +33,7 @@
     <Resource Include="Assets\orbit.ico" />
     <EmbeddedResource Include="Assets\material-icons.json" LogicalName="Orbit.material-icons.json" />
     <None Include="THIRD-PARTY-NOTICES.txt" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="LICENSE" CopyToOutputDirectory="PreserveNewest" />
     <!-- Icon packs: separate data files under their own licences (see Assets\icons\README.txt) -->
     <None Include="Assets\icons\**\*" Link="icons\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>

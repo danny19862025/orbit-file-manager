@@ -19,6 +19,14 @@ public partial class App : Application
         AppDomain.CurrentDomain.UnhandledException += (_, a) => { if (a.ExceptionObject is Exception ex) AppSettings.LogError(ex); };
         TaskScheduler.UnobservedTaskException += (_, a) => { AppSettings.LogError(a.Exception); a.SetObserved(); };
 
+        // Orbit.exe --uninstall                 — run by Settings › Apps for installed copies
+        if (Array.Exists(e.Args, a => a == "--uninstall"))
+        {
+            Uninstaller.Run();
+            Shutdown();
+            return;
+        }
+
         AppSettings.Load();
         Themes.Apply(AppSettings.Current.Theme, AppSettings.Current.Translucent ? AppSettings.Current.Transparency : 0);
         Glass.Register(); // Settings and dialogs share the main window's glass

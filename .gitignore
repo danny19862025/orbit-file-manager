@@ -5,3 +5,8 @@ obj/
 *.suo
 .vs/
 *.tmp
+
+dist/
+installer/bin/
+installer/obj/
+installer/payload/
