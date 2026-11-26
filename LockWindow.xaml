@@ -1,0 +1,92 @@
+<Window x:Class="Orbit.LockWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Locked folder" Width="460" SizeToContent="Height" ResizeMode="NoResize"
+        WindowStyle="None" ShowInTaskbar="False" WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource ContentBg}" Foreground="{DynamicResource TextBrush}"
+        FontFamily="{StaticResource UiFont}" FontSize="13" UseLayoutRounding="True">
+  <WindowChrome.WindowChrome>
+    <WindowChrome CaptionHeight="44" ResizeBorderThickness="0" GlassFrameThickness="0" CornerRadius="0" UseAeroCaptionButtons="False"/>
+  </WindowChrome.WindowChrome>
+  <Window.Resources>
+    <Style x:Key="PwdBox" TargetType="PasswordBox">
+      <Setter Property="Background" Value="{DynamicResource PanelBg}"/>
+      <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+      <Setter Property="CaretBrush" Value="{DynamicResource TextBrush}"/>
+      <Setter Property="SelectionBrush" Value="{DynamicResource AccentBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource LineBrush}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="Padding" Value="8,0"/>
+      <Setter Property="Height" Value="34"/>
+      <Setter Property="FontSize" Value="13.5"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="PasswordBox">
+            <Border x:Name="Bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6">
+              <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}" Focusable="False"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsKeyboardFocused" Value="True">
+                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+  </Window.Resources>
+
+  <Border BorderBrush="{DynamicResource LineBrush}" BorderThickness="1">
+    <StackPanel>
+      <DockPanel Height="44" Margin="20,0,6,0">
+        <Button x:Name="CloseX" DockPanel.Dock="Right" Style="{StaticResource IconButton}" Content="&#xE711;" FontSize="11" Click="Cancel_Click"
+                WindowChrome.IsHitTestVisibleInChrome="True"/>
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+          <TextBlock x:Name="TitleGlyph" Text="&#xE72E;" FontFamily="{StaticResource IconFont}" Foreground="{DynamicResource AccentBrush}" FontSize="15" Margin="0,0,10,0" VerticalAlignment="Center"/>
+          <TextBlock x:Name="TitleText" FontWeight="SemiBold" VerticalAlignment="Center"/>
+        </StackPanel>
+      </DockPanel>
+
+      <StackPanel Margin="26,6,26,22">
+        <TextBlock x:Name="Headline" FontSize="19" FontWeight="SemiBold" TextWrapping="Wrap"/>
+        <TextBlock x:Name="Explain" Foreground="{DynamicResource MutedBrush}" TextWrapping="Wrap" Margin="0,6,0,16"/>
+
+        <StackPanel x:Name="Fields">
+          <TextBlock Text="Password" Foreground="{DynamicResource MutedBrush}" Margin="0,0,0,5"/>
+          <PasswordBox x:Name="Pwd" Style="{StaticResource PwdBox}" PasswordChanged="Pwd_Changed"/>
+          <StackPanel x:Name="ConfirmPanel">
+            <TextBlock Text="Type it again" Foreground="{DynamicResource MutedBrush}" Margin="0,12,0,5"/>
+            <PasswordBox x:Name="Pwd2" Style="{StaticResource PwdBox}" PasswordChanged="Pwd_Changed"/>
+            <TextBlock x:Name="Strength" Foreground="{DynamicResource MutedBrush}" FontSize="12" Margin="0,8,0,0" TextWrapping="Wrap"/>
+          </StackPanel>
+          <CheckBox x:Name="RecycleOriginal" IsChecked="True" Margin="0,16,0,0" Foreground="{DynamicResource TextBrush}" VerticalContentAlignment="Center"/>
+        </StackPanel>
+
+        <Border x:Name="Warning" Margin="0,16,0,0" CornerRadius="10" Padding="12,10" BorderThickness="1"
+                Background="{DynamicResource PanelBg}" BorderBrush="{DynamicResource LineBrush}">
+          <DockPanel>
+            <TextBlock DockPanel.Dock="Left" Text="&#xE7BA;" FontFamily="{StaticResource IconFont}" Foreground="{DynamicResource AccentBrush}" Margin="0,2,10,0"/>
+            <TextBlock x:Name="WarningText" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}" FontSize="12.5"/>
+          </DockPanel>
+        </Border>
+
+        <StackPanel x:Name="Busy" Visibility="Collapsed" Margin="0,16,0,0">
+          <ProgressBar x:Name="Bar" Height="6" Maximum="1" Foreground="{DynamicResource AccentBrush}" Background="{DynamicResource PanelBg}" BorderThickness="0"/>
+          <TextBlock x:Name="BusyText" Foreground="{DynamicResource MutedBrush}" FontSize="12" Margin="0,6,0,0" TextTrimming="CharacterEllipsis"/>
+        </StackPanel>
+
+        <TextBlock x:Name="ErrorText" Foreground="#F38BA8" TextWrapping="Wrap" Margin="0,12,0,0" Visibility="Collapsed"/>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+          <Button x:Name="CancelBtn" Style="{StaticResource DlgButton}" Content="Cancel" Click="Cancel_Click" IsCancel="True"/>
+          <Button x:Name="OkBtn" Style="{StaticResource DlgButton}" Margin="10,0,0,0" Click="Ok_Click" IsDefault="True" FontWeight="SemiBold"
+                  Background="{DynamicResource AccentBrush}" BorderBrush="{DynamicResource AccentBrush}" Foreground="{DynamicResource ContentBg}"/>
+        </StackPanel>
+      </StackPanel>
+    </StackPanel>
+  </Border>
+</Window>

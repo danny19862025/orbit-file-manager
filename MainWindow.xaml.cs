@@ -150,6 +150,7 @@ public partial class MainWindow : Window
         RestoreSplit();
         if (PendingSpacePath != null) { var sp = PendingSpacePath; PendingSpacePath = null; Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () => OpenSpace(sp)); }
         if (PendingConvertPath != null) { var cp = PendingConvertPath; PendingConvertPath = null; Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () => OpenConvertPaths(new List<string> { cp })); }
+        if (PendingLock is { } pl) { PendingLock = null; Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () => OpenLock(pl.Path, pl.Locking)); }
         _ = Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, () => SearchService.Start());
         FitTabs();
     }
@@ -1153,6 +1154,7 @@ public partial class MainWindow : Window
             if (f.InArchive) OpenArchivedFile(f);
             else if (!f.IsRemote && Archives.IsArchiveFile(f.FullPath)) Navigate(Archives.Make(f.FullPath, ""));
             else if (!f.IsRemote && Archives.IsIso(f.FullPath)) MountIso(f.FullPath);
+            else if (!f.IsRemote && FolderLock.IsLockFile(f.FullPath)) OpenLock(f.FullPath, false);
             else if (f.IsRemote) OpenRemoteFile(f);
             else Try(() => Shell.Open(f.FullPath));
         }

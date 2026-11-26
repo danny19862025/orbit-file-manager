@@ -169,7 +169,7 @@ public static class IconPack
         ["md"] = "markdown", ["markdown"] = "markdown", ["mdx"] = "mdx", ["txt"] = "document", ["rtf"] = "word", ["log"] = "log", ["pdf"] = "pdf",
         ["doc"] = "word", ["docx"] = "word", ["odt"] = "word", ["xls"] = "table", ["xlsx"] = "table", ["csv"] = "table", ["tsv"] = "table", ["ods"] = "table",
         ["ppt"] = "powerpoint", ["pptx"] = "powerpoint", ["odp"] = "powerpoint",
-        ["zip"] = "zip", ["rar"] = "zip", ["7z"] = "zip", ["tar"] = "zip", ["gz"] = "zip", ["tgz"] = "zip", ["bz2"] = "zip", ["xz"] = "zip", ["zst"] = "zip",
+        ["orbitlock"] = "lock", ["zip"] = "zip", ["rar"] = "zip", ["7z"] = "zip", ["tar"] = "zip", ["gz"] = "zip", ["tgz"] = "zip", ["bz2"] = "zip", ["xz"] = "zip", ["zst"] = "zip",
         ["iso"] = "disc", ["img"] = "disc", ["vhd"] = "disc", ["vhdx"] = "disc", ["exe"] = "exe", ["msi"] = "exe", ["dll"] = "dll", ["sys"] = "dll",
         ["png"] = "image", ["jpg"] = "image", ["jpeg"] = "image", ["jfif"] = "image", ["gif"] = "image", ["bmp"] = "image", ["webp"] = "image",
         ["heic"] = "image", ["heif"] = "image", ["avif"] = "image", ["tif"] = "image", ["tiff"] = "image", ["ico"] = "image", ["raw"] = "image",

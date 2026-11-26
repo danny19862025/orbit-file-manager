@@ -29,6 +29,7 @@ public partial class MainWindow
     internal void ToastFromSpace(string msg) => Toast(msg);
 
     internal static string PendingConvertPath;
+    internal static (bool Locking, string Path)? PendingLock;
 
     /// <summary>Tools section of the ⋯ menu.</summary>
     void AddToolItems(ContextMenu menu)
@@ -62,6 +63,32 @@ public partial class MainWindow
         var group = ConvertibleGroup(localFiles);
         if (group.Count > 0)
             menu.Items.Add(MI(group.Count == 1 ? "Convert…" : $"Convert {group.Count} files…", "", () => OpenConvertPaths(group)));
+        if (localFiles.Count == 1)
+        {
+            var f = localFiles[0];
+            if (f.IsDir) menu.Items.Add(MI("Lock with password…", "", () => OpenLock(f.FullPath, true)));
+            else if (FolderLock.IsLockFile(f.FullPath)) menu.Items.Add(MI("Unlock…", "", () => OpenLock(f.FullPath, false)));
+        }
+    }
+
+    // ---------- locked folders ----------
+    internal void OpenLock(string path, bool locking)
+    {
+        if (locking)
+        {
+            var full = Path.GetFullPath(path).TrimEnd('\\');
+            var windir = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+            bool protectedDir = Path.GetPathRoot(full)!.TrimEnd('\\') == full
+                || full.StartsWith(windir + "\\", StringComparison.OrdinalIgnoreCase)
+                || new[] { Environment.SpecialFolder.Windows, Environment.SpecialFolder.ProgramFiles, Environment.SpecialFolder.ProgramFilesX86,
+                           Environment.SpecialFolder.UserProfile, Environment.SpecialFolder.CommonApplicationData }
+                   .Select(Environment.GetFolderPath)
+                   .Any(s => !string.IsNullOrEmpty(s) && string.Equals(s.TrimEnd('\\'), full, StringComparison.OrdinalIgnoreCase));
+            if (protectedDir) { Toast("Orbit won't lock a drive, system folder or your whole user folder"); return; }
+            if (!Directory.Exists(full)) { Toast("That folder isn't available"); return; }
+        }
+        else if (!File.Exists(path)) { Toast("That file isn't available"); return; }
+        new LockWindow(this, path, locking).ShowDialog();
     }
 
     void AddDriveMenuItems(ContextMenu menu, SideItem s)
