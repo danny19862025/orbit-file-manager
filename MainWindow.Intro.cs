@@ -115,7 +115,7 @@ public partial class MainWindow
         iconScale.BeginAnimation(ScaleTransform.ScaleYProperty, pop);
 
         // moon: exactly one lap round the ring, easing in and out, ending where it started
-        const double delayMs = 150, lapMs = 1150;
+        const double delayMs = 200, lapMs = 2000;
         var clock = Stopwatch.StartNew();
         EventHandler tick = null;
         tick = (_, _) =>
