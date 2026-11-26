@@ -24,6 +24,15 @@ public partial class MainWindow
     internal void SetTheme(string name) => ApplyTheme(name, S.Translucent);
     internal void SetTranslucent(bool on) => ApplyTheme(S.Theme, on);
 
+    /// <summary>Live while the slider moves: only the colours change, so the window doesn't flicker.</summary>
+    internal void SetTransparency(int percent)
+    {
+        S.Transparency = System.Math.Clamp(percent, 5, 90);
+        if (!S.Translucent) { ApplyTheme(S.Theme, true); return; }
+        Themes.Apply(S.Theme, S.Transparency);
+        SaveSoon();
+    }
+
     internal void SetShowHidden(bool on)
     {
         HiddenToggle.IsChecked = on;

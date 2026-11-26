@@ -201,6 +201,7 @@ public partial class MainWindow : Window
         menu.Items.Add(new Separator());
         var glass = MI("Translucent window (Mica)", "", () => ApplyTheme(S.Theme, !S.Translucent));
         glass.IsChecked = S.Translucent;
+        if (S.Translucent) glass.Header = $"Translucent window (Mica) · {S.Transparency}%";
         glass.ToolTip = "Lets the Windows 11 acrylic backdrop blur through the sidebar and toolbar";
         menu.Items.Add(glass);
         menu.IsOpen = true;
@@ -210,7 +211,7 @@ public partial class MainWindow : Window
     {
         S.Theme = Themes.Find(name).Name;
         S.Translucent = translucent;
-        Themes.Apply(S.Theme, S.Translucent);
+        Themes.Apply(S.Theme, S.Translucent ? S.Transparency : 0);
         if (IconPack.Tinted && IsLoaded) RefreshIcons();
         ApplyBackdrop();
         UpdateStar();

@@ -20,7 +20,7 @@ public partial class App : Application
         TaskScheduler.UnobservedTaskException += (_, a) => { AppSettings.LogError(a.Exception); a.SetObserved(); };
 
         AppSettings.Load();
-        Themes.Apply(AppSettings.Current.Theme, AppSettings.Current.Translucent);
+        Themes.Apply(AppSettings.Current.Theme, AppSettings.Current.Translucent ? AppSettings.Current.Transparency : 0);
         IconService.Init(Dispatcher);
 
         // Orbit.exe [folder or file]           — open there (a file is selected in its folder)

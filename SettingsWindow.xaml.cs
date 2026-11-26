@@ -26,6 +26,9 @@ public partial class SettingsWindow : Window
         BuildIconCards();
         ThumbCheck.IsChecked = S.PackThumbnails;
         TranslucentCheck.IsChecked = S.Translucent;
+        TransparencySlider.Value = S.Transparency;
+        TransparencyText.Text = $"{S.Transparency}%";
+        TransparencyRow.Opacity = S.Translucent ? 1 : 0.6;
         HiddenCheck.IsChecked = S.ShowHidden;
         RestoreCheck.IsChecked = S.RestoreTabs;
         ViewGrid.IsChecked = S.ViewMode == "grid";
@@ -36,7 +39,8 @@ public partial class SettingsWindow : Window
         DescCheck.IsChecked = S.SortDesc;
         BuildKnownHosts();
         BuildShortcutRows();
-        FixedList.ItemsSource = MainWindow.FixedShortcuts;
+        // value tuples have fields, which WPF can't bind to, so hand the list over as objects with properties
+        FixedList.ItemsSource = MainWindow.FixedShortcuts.Select(f => new { f.Label, f.Keys }).ToList();
         BuildSidebarRows();
         VersionText.Text = $"Version {AppInfo.VersionText}  ·  .NET {Environment.Version.ToString(2)}  ·  {(Environment.Is64BitProcess ? "64-bit" : "32-bit")}";
         SetupAbout();
@@ -153,7 +157,21 @@ public partial class SettingsWindow : Window
         }
     }
 
-    void Translucent_Click(object sender, RoutedEventArgs e) => main.SetTranslucent(TranslucentCheck.IsChecked == true);
+    void Translucent_Click(object sender, RoutedEventArgs e)
+    {
+        main.SetTranslucent(TranslucentCheck.IsChecked == true);
+        TransparencyRow.Opacity = S.Translucent ? 1 : 0.6;
+    }
+
+    void Transparency_Changed(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        if (TransparencyText == null || !IsLoaded) return;
+        int pct = (int)Math.Round(e.NewValue);
+        TransparencyText.Text = $"{pct}%";
+        main.SetTransparency(pct); // moving the slider turns the glass on
+        TranslucentCheck.IsChecked = true;
+        TransparencyRow.Opacity = 1;
+    }
 
     void BuildIconCards()
     {

@@ -69,7 +69,7 @@ public static class Themes
         string.Equals(name, WallpaperName, StringComparison.OrdinalIgnoreCase) ? WallpaperTheme.Build() :
         All.FirstOrDefault(t => string.Equals(t.Name, name, StringComparison.OrdinalIgnoreCase)) ?? All[0];
 
-    public static void Apply(string name, bool translucent)
+    public static void Apply(string name, int transparency)
     {
         var t = Find(name);
         Current = t;
@@ -78,8 +78,11 @@ public static class Themes
               s2 = C(t.Surface2), text = C(t.Text), sub = C(t.Subtext), accent = C(t.Accent), lav = C(t.Lavender);
 
         // Translucent mode lets the Windows Mica backdrop show through the chrome (sidebar, title bar, content).
-        byte sideA = translucent ? (byte)0xB8 : (byte)0xFF;
-        byte baseA = translucent ? (byte)0xE0 : (byte)0xFF;
+        // transparency is 0 (opaque) to 90 %; the sidebar is a little clearer than the file area, which stays more readable.
+        transparency = Math.Clamp(transparency, 0, 90);
+        double sideClear = transparency == 0 ? 0 : Math.Min(95, transparency * 1.2 + 6) / 100.0;
+        byte sideA = (byte)Math.Round(255 * (1 - sideClear));
+        byte baseA = (byte)Math.Round(255 * (1 - transparency / 100.0));
 
         var tokens = new Dictionary<string, Color>
         {

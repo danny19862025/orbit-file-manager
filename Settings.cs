@@ -32,6 +32,8 @@ public sealed class AppSettings
     public Dictionary<string, bool> Sections { get; set; } = new();
     public string Theme { get; set; } = "Catppuccin Mocha";
     public bool Translucent { get; set; }
+    /// <summary>How see-through the window is when Translucent is on, 5–90 %.</summary>
+    public int Transparency { get; set; } = 15;
     public bool RestoreTabs { get; set; } = true;
     public string SplitPath { get; set; }
     public double SplitWidth { get; set; } = 460;
@@ -73,6 +75,7 @@ public sealed class AppSettings
         Keymap ??= new();
         Servers.RemoveAll(s => s == null || string.IsNullOrWhiteSpace(s.Host));
         Theme = Orbit.Themes.Find(Theme).Name;
+        Transparency = Math.Clamp(Transparency, 5, 90);
         if (Orbit.IconPack.Find(IconPack) == null) IconPack = Orbit.IconPack.Material;
         var tags = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
         if (Tags != null)
