@@ -10,6 +10,11 @@ A fast, modern file manager for Windows 10/11, built with WPF and .NET 10.
 - **Quick preview** (Space) — images, text and code, PDF, audio and video, ZIP contents and folders
 - **Command bar** — New, Cut, Copy, Paste, Rename, Share, Delete, Properties, Sort, View and Filter (by kind and date)
 - **Drag and drop** — onto folders, tabs, the path bar and the sidebar; box-select; folders spring open while dragging; a Dropzone shelf
+- **Archives** — browse ZIP, RAR, 7z, TAR (and .tar.gz/.bz2/.xz) like folders; extract, compress to ZIP, drag files out; mount ISO/VHD images
+- **Split view** (Ctrl+\\) — a second pane for copying and moving between two folders; drop a tab on the right half to open it there
+- **Disk space map** — see what's filling a drive or folder as bubbles, drill in, and send the biggest items to the Recycle Bin
+- **Convert** — images to JPG, PNG, TIFF, BMP or GIF with live size estimates and resizing; video and audio to MP4, WebM, GIF, MP3, M4A, OGG or WAV when [ffmpeg](https://ffmpeg.org/download.html) is installed
+- **Locked folders** — turn a folder into a single password-protected `.orbitlock` file (AES-256-GCM, PBKDF2-SHA256 key with 600,000 iterations). Orbit never stores the password, and a forgotten password can't be recovered
 - **Network** — SMB/Samba and WebDAV through Windows, SFTP over SSH, Google Drive / Dropbox / OneDrive / iCloud sync folders, and optional rclone mounts
 - **Themes** — Catppuccin Mocha, Tokyo Night, Rosé Pine, Nord and Catppuccin Latte, with an optional translucent (Mica) window
 - **Icon packs** — Windows icons or the Material Icon Theme
