@@ -258,7 +258,7 @@ export const KEYBOARD_SHORTCUTS = [
   { cat: "Fixed", action: "Copy / Move while dragging", keys: "Hold Ctrl / Shift" },
 ];
 
-export const CLI_COMMANDS = [
+export const CLI_COMMANDS_WINDOWS = [
   { cmd: "Orbit.exe D:\\Projects\\App", desc: "Open folder, select file, or browse archive like a folder" },
   { cmd: "Orbit.exe --preview photo.heic", desc: "Open the file's folder and launch Quick Preview" },
   { cmd: "Orbit.exe --space C:\\Users\\Danny", desc: "Open the interactive Disk Space Map for a folder" },
@@ -267,4 +267,26 @@ export const CLI_COMMANDS = [
   { cmd: "Orbit.exe --unlock Private.orbitlock", desc: "Unlock and restore an encrypted .orbitlock archive" },
   { cmd: "Orbit.exe recycle:", desc: "Jump straight into Orbit's integrated Recycle Bin" },
   { cmd: "OrbitSetup-1.0.0.exe /quiet /desktop", desc: "Silent per-user install (no admin UAC prompt)" },
+];
+
+export const CLI_COMMANDS_LINUX = [
+  { cmd: "orbit ~/Projects/orbit", desc: "Open folder, select file, or browse archive like a folder" },
+  { cmd: "orbit smb://server/share", desc: "Mount and open an SMB / Samba or sftp:// network share" },
+  { cmd: "orbit trash:///", desc: "Open the freedesktop.org Trash directly in Orbit" },
+  { cmd: "orbit --preview photo.avif", desc: "Open the file's folder and launch Quick Preview (mpv / pdftoppm)" },
+  { cmd: "orbit --space ~/Downloads", desc: "Open the interactive Disk Space Map for a folder" },
+  { cmd: "orbit --convert video.mkv", desc: "Open Convert directly (ffmpeg / ImageMagick)" },
+  { cmd: "orbit --lock ~/Private", desc: "Encrypt to .orbitlock (100% compatible with Windows)" },
+  { cmd: "./install.sh --default", desc: "Install to ~/.local/opt/orbit (no root) & set as default file manager" },
+];
+
+export const LINUX_PARITY_ROWS = [
+  ["Trash / Recycle Bin", "Windows Recycle Bin", "freedesktop.org Trash (~/.local/share/Trash & .Trash-<uid>), shared with Dolphin & Files"],
+  ["Drives & Mounting", "Drive letters + Windows Eject", "Mounted drives (/, /home, /run/media) with labels, free space & udisks2 Eject / ISO mount"],
+  ["Network Shares", "Windows SMB & WebClient", "GVfs (gio mount) for SMB/WebDAV + built-in SSH.NET SFTP & rclone + fuse3 cloud mounts"],
+  ["Translucent Window", "Windows 11 Mica / Acrylic", "Compositor blur request (KDE Plasma, Hyprland, picom…) with 5%–90% transparency"],
+  ["System / Wallpaper Theme", "pywal or Windows accent", "pywal, KDE Plasma, or GNOME live accent colour & light/dark mode"],
+  ["Media & PDF Preview", "Windows codecs & PDF engine", "Embedded mpv for video/audio, pdftoppm for PDFs, ffmpeg + ImageMagick conversion"],
+  ["Icon Theme", "Windows Shell + 7 packs", "System desktop theme (Breeze, Adwaita, Papirus…) via MIME database + 7 packs"],
+  ["Settings & .orbitlock", "%AppData%\\Orbit\\settings.json", "~/.config/Orbit/settings.json (identical format) & cross-platform .orbitlock vaults"],
 ];

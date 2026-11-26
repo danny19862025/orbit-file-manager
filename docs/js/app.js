@@ -7,7 +7,9 @@ import {
   ICON_PACKS,
   SETTINGS_PAGES,
   KEYBOARD_SHORTCUTS,
-  CLI_COMMANDS,
+  CLI_COMMANDS_WINDOWS,
+  CLI_COMMANDS_LINUX,
+  LINUX_PARITY_ROWS,
 } from './data.js';
 
 // ============================================================================
@@ -862,26 +864,88 @@ function initShortcutsExplorer() {
 }
 
 // ============================================================================
-// 12. CLI Commands Simulator
+// 12. Hero Platform Toggle, Linux Parity Table & CLI Commands Simulator
 // ============================================================================
+function initPlatformAndLinux() {
+  const heroImg = document.getElementById('hero-main-img');
+  const toggleBtns = document.querySelectorAll('[data-hero-platform]');
+  if (heroImg && toggleBtns.length) {
+    const map = {
+      linux: {
+        src: 'screenshots/linux-grid.png',
+        alt: 'Orbit File Manager on Linux (Avalonia)',
+        caption: 'Orbit for Linux (Avalonia) — KDE Plasma, GNOME, Hyprland & other desktops',
+      },
+      windows: {
+        src: 'screenshots/main-grid.png',
+        alt: 'Orbit File Manager on Windows 11 (WPF)',
+        caption: 'Orbit for Windows 10 & 11 (WPF) — Catppuccin Mocha, Material Icons',
+      },
+    };
+    toggleBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.dataset.heroPlatform;
+        const cfg = map[key];
+        if (!cfg) return;
+        toggleBtns.forEach((b) => b.classList.toggle('active', b === btn));
+        heroImg.src = cfg.src;
+        heroImg.alt = cfg.alt;
+        heroImg.dataset.caption = cfg.caption;
+      });
+    });
+  }
+
+  const installSnippet = document.getElementById('linux-install-snippet');
+  installSnippet?.addEventListener('click', () => {
+    const cmd = 'tar xf Orbit-1.0.0-linux-x64.tar.gz && cd Orbit-1.0.0-linux-x64 && ./install.sh --default';
+    navigator.clipboard?.writeText(cmd).catch(() => {});
+    showToast('Copied Linux install commands');
+  });
+
+  const parityBody = document.getElementById('linux-parity-body');
+  if (parityBody) {
+    parityBody.innerHTML = LINUX_PARITY_ROWS.map(([area, win, lin]) => `
+      <tr>
+        <td>${area}</td>
+        <td>${win}</td>
+        <td>${lin}</td>
+      </tr>
+    `).join('');
+  }
+}
+
 function initCliCommands() {
   const list = document.getElementById('cli-list');
+  const tabs = document.querySelectorAll('[data-cli-os]');
+  const titleEl = document.getElementById('cli-terminal-title');
   if (!list) return;
 
-  list.innerHTML = CLI_COMMANDS.map((c) => `
-    <div class="cli-row" data-cmd="${c.cmd}" title="Click to copy command">
-      <code class="cli-cmd">${c.cmd}</code>
-      <span class="cli-desc">${c.desc}</span>
-    </div>
-  `).join('');
+  function renderCli(os) {
+    const items = os === 'linux' ? CLI_COMMANDS_LINUX : CLI_COMMANDS_WINDOWS;
+    if (titleEl) {
+      titleEl.textContent = os === 'linux'
+        ? 'Linux Shell (bash / zsh) — Click any command to copy'
+        : 'Windows PowerShell — Click any command to copy';
+    }
+    tabs.forEach((t) => t.classList.toggle('active', t.dataset.cliOs === os));
+    list.innerHTML = items.map((c) => `
+      <div class="cli-row" data-cmd="${c.cmd}" title="Click to copy command">
+        <code class="cli-cmd">${c.cmd}</code>
+        <span class="cli-desc">${c.desc}</span>
+      </div>
+    `).join('');
 
-  list.querySelectorAll('.cli-row').forEach((row) => {
-    row.addEventListener('click', () => {
-      const cmd = row.dataset.cmd;
-      navigator.clipboard?.writeText(cmd).catch(() => {});
-      showToast(`Copied: ${cmd}`);
+    list.querySelectorAll('.cli-row').forEach((row) => {
+      row.addEventListener('click', () => {
+        const cmd = row.dataset.cmd;
+        navigator.clipboard?.writeText(cmd).catch(() => {});
+        showToast(`Copied: ${cmd}`);
+      });
     });
-  });
+  }
+
+  tabs.forEach((t) => t.addEventListener('click', () => renderCli(t.dataset.cliOs)));
+  renderCli('linux');
 }
 
 // ============================================================================
@@ -931,6 +995,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initPowerTools();
   initIconPacksAndSettings();
   initShortcutsExplorer();
+  initPlatformAndLinux();
   initCliCommands();
   initLightbox();
 });

@@ -428,10 +428,134 @@ body {
 }
 
 /* 3D Hero Window Reveal */
+.hero-platform-toggle {
+  display: inline-flex;
+  gap: 6px;
+  padding: 5px;
+  border-radius: 999px;
+  margin-bottom: 18px;
+}
+
 .hero-stage-wrap {
   perspective: 1600px;
   margin: 0 auto;
   max-width: 1120px;
+}
+
+/* Linux Section */
+.linux-hero-grid {
+  display: grid;
+  grid-template-columns: 1.25fr 1fr;
+  gap: 28px;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.linux-helpers-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.linux-helper-card {
+  border-radius: var(--radius-md);
+  padding: 16px;
+}
+
+.linux-helper-card code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  color: var(--accent);
+  display: block;
+  margin-bottom: 6px;
+}
+
+.linux-helper-card p {
+  font-size: 0.8rem;
+  color: var(--subtext);
+}
+
+.install-snippet {
+  background: var(--crust);
+  border: 1px solid var(--surface1);
+  border-radius: 14px;
+  padding: 14px 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  color: var(--lavender);
+  line-height: 1.7;
+  cursor: pointer;
+  position: relative;
+  transition: border-color 0.2s;
+}
+
+.install-snippet:hover {
+  border-color: var(--accent);
+}
+
+.install-snippet .copy-hint {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  font-family: inherit;
+  font-size: 0.68rem;
+  color: var(--subtext);
+  background: var(--surface0);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.parity-table-wrap {
+  border-radius: var(--radius-lg);
+  overflow-x: auto;
+  padding: 18px 22px;
+}
+
+.parity-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+}
+
+.parity-table th {
+  text-align: left;
+  padding: 10px 12px;
+  color: var(--accent);
+  border-bottom: 1px solid var(--surface1);
+  font-weight: 700;
+}
+
+.parity-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--surface1) 45%, transparent);
+  color: var(--subtext);
+  vertical-align: top;
+}
+
+.parity-table td:first-child {
+  color: var(--text);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.parity-table tr:last-child td {
+  border-bottom: none;
+}
+
+@media (max-width: 1024px) {
+  .linux-hero-grid {
+    grid-template-columns: 1fr;
+  }
+  .linux-helpers-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .linux-helpers-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .hero-window-frame {

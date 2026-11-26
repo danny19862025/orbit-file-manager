@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Orbit File Manager — Full Interactive Reveal</title>
-  <meta name="description" content="A fast, modern file manager for Windows 10 and 11. Tabs, four views, instant fuzzy search, quick preview, archives, split panes, encrypted folders, network drives, 15 themes and 8 icon packs." />
+  <title>Orbit File Manager — Linux &amp; Windows Interactive Reveal</title>
+  <meta name="description" content="A fast, modern file manager for Linux and Windows 10/11. Tabs, four views, instant fuzzy search, quick preview, archives, split panes, encrypted folders, network drives, 15 themes and 8 icon packs." />
   <link rel="icon" type="image/png" href="assets/orbit-256.png" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
@@ -22,6 +22,7 @@
       <span class="nav-badge">v1.0.0</span>
     </a>
     <ul class="nav-links">
+      <li><a href="#linux">Linux</a></li>
       <li><a href="#anatomy">Window</a></li>
       <li><a href="#views">Views</a></li>
       <li><a href="#search">Search</a></li>
@@ -88,63 +89,140 @@
 
       <div class="hero-eyebrow glass">
         <span class="dot"></span>
-        <span>Open-Source · MIT License · Zero Telemetry · Windows 10 &amp; 11 (x64)</span>
+        <span>Open-Source · MIT License · Zero Telemetry · Linux (x64 / arm64) &amp; Windows 10/11</span>
       </div>
 
       <h1 class="hero-title">
         Meet <span class="gradient-text">Orbit</span>.<br />
-        Windows File Management, Reimagined.
+        File Management for Linux &amp; Windows.
       </h1>
 
       <p class="hero-subtitle">
-        Tabs, four views, instant fuzzy search across every drive, quick previews, native archives, split panes, AES-256 locked folders, disk space maps, media conversion, network drives, 15 themes &amp; 8 icon packs — in one calm, keyboard-first window.
+        Tabs, four views, instant fuzzy search across every drive, quick previews, native archives, split panes, cross-platform AES-256 locked folders, disk space maps, media conversion, network drives, 15 themes &amp; 8 icon packs — in one calm, keyboard-first window.
       </p>
 
       <div class="hero-cta-row">
-        <a class="btn btn-primary" href="https://github.com/danny19862025/orbit-file-manager/releases/latest" target="_blank" rel="noopener">
-          ⬇ Download Latest Release
+        <a class="btn btn-primary" href="https://github.com/danny19862025/orbit-file-manager/releases/latest/download/Orbit-1.0.0-linux-x64.tar.gz" target="_blank" rel="noopener">
+          🐧 Download for Linux (.tar.gz)
         </a>
-        <a class="btn btn-secondary" href="https://github.com/danny19862025/orbit-file-manager" target="_blank" rel="noopener">
-          ★ View on GitHub
+        <a class="btn btn-secondary" href="https://github.com/danny19862025/orbit-file-manager/releases/latest/download/OrbitSetup-1.0.0.exe" target="_blank" rel="noopener">
+          ⬇ Download for Windows (.exe)
         </a>
-        <a class="btn btn-ghost" href="#anatomy">
-          Explore Every Feature ↓
+        <a class="btn btn-ghost" href="https://github.com/danny19862025/orbit-file-manager" target="_blank" rel="noopener">
+          ★ GitHub
         </a>
       </div>
 
       <div class="hero-meta-strip">
-        <span>⚡ Self-contained .NET 10 WPF (no runtime install)</span>
-        <span>🛡️ Per-user installer (no UAC admin prompt)</span>
+        <span>🐧 Native Avalonia 11 on Linux · WPF on Windows (.NET 10 self-contained)</span>
+        <span>🛡️ Per-user install (no root / no UAC prompt)</span>
         <span>🎨 Live Theme Engine (<strong id="active-theme-name">Catppuccin Mocha</strong>)</span>
+      </div>
+
+      <!-- Platform Switcher for Hero Window -->
+      <div class="hero-platform-toggle glass">
+        <button class="pill-tab active" type="button" data-hero-platform="linux">🐧 Linux (Avalonia)</button>
+        <button class="pill-tab" type="button" data-hero-platform="windows">🪟 Windows (WPF)</button>
       </div>
 
       <!-- 3D Perspective Reveal Stage -->
       <div class="hero-stage-wrap">
         <div class="hero-window-frame glass" id="hero-window-frame">
           <img
-            src="screenshots/main-grid.png"
-            alt="Orbit File Manager main window in Catppuccin Mocha theme"
+            id="hero-main-img"
+            src="screenshots/linux-grid.png"
+            alt="Orbit File Manager on Linux (Avalonia)"
             data-zoom
-            data-caption="Orbit File Manager — Main Window (Grid View, Catppuccin Mocha, Material Icons)"
+            data-caption="Orbit for Linux (Avalonia) — KDE Plasma, GNOME, Hyprland & other desktops"
           />
           <div class="hero-floating-stat glass-strong stat-left">
             <span style="font-size:1.3rem;">⚡</span>
             <div>
               <strong>Ctrl+K Fuzzy Index</strong>
-              <span>Every local drive, cached locally</span>
+              <span>Every drive, cached locally</span>
             </div>
           </div>
           <div class="hero-floating-stat glass-strong stat-right">
             <span style="font-size:1.3rem;">🔒</span>
             <div>
-              <strong>AES-256-GCM Vaults</strong>
-              <span>600k PBKDF2 .orbitlock folders</span>
+              <strong>Cross-OS .orbitlock</strong>
+              <span>Lock on Linux, unlock on Windows</span>
             </div>
           </div>
         </div>
       </div>
     </div>
   </header>
+
+  <!-- =====================================================================
+       SECTION 1.5: ORBIT FOR LINUX SHOWCASE
+       ===================================================================== -->
+  <section class="reveal-section" id="linux">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-kicker">Now on Linux · Avalonia 11</span>
+        <h2 class="section-title">Orbit for Linux — Native Desktop Integration</h2>
+        <p class="section-desc">Built for KDE Plasma, GNOME, Hyprland, and other 64-bit desktops. The exact same window, views, shortcuts, themes, icon packs, and settings format — powered natively by freedesktop Trash, GVfs, udisks2, and mpv.</p>
+      </div>
+
+      <div class="linux-hero-grid reveal reveal-delay-1">
+        <div class="panel-img-frame glass" style="padding:10px;">
+          <img src="screenshots/linux-grid.png" alt="Orbit for Linux running natively on desktop" data-zoom data-caption="Orbit for Linux — Native Avalonia build with freedesktop Trash, GVfs, udisks2 & compositor blur" />
+        </div>
+        <div class="glass" style="border-radius:var(--radius-lg);padding:24px;display:flex;flex-direction:column;gap:14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <h3 style="font-size:1.3rem;">Zero-Root Per-User Install</h3>
+            <span class="nav-badge">No .NET Needed</span>
+          </div>
+          <p style="font-size:0.88rem;color:var(--subtext);">Installs into <code>~/.local/opt/orbit</code>, adds the app-menu <code>.desktop</code> entry and <code>orbit</code> CLI command. Remove anytime with <code>./uninstall.sh</code> (or <code>--purge</code>).</p>
+          <div class="install-snippet" id="linux-install-snippet" title="Click to copy install commands">
+            <span class="copy-hint">Click to copy</span>
+            tar xf Orbit-1.0.0-linux-x64.tar.gz<br />
+            cd Orbit-1.0.0-linux-x64<br />
+            ./install.sh &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# per-user install<br />
+            ./install.sh --default # set default for folders
+          </div>
+          <ul class="feature-bullet-list">
+            <li><div><strong>Cross-Platform Vaults &amp; Config:</strong> Settings live in <code>~/.config/Orbit/settings.json</code> (identical schema) and <code>.orbitlock</code> vaults unlock across both Linux and Windows.</div></li>
+            <li><div><strong>x64 &amp; arm64 Builds:</strong> Build locally with <code>linux/build-release.sh</code> or run from source via <code>dotnet run --project linux</code>.</div></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="linux-helpers-grid reveal reveal-delay-2">
+        <div class="linux-helper-card glass">
+          <code>gio · gvfs-smb · gvfs-dav</code>
+          <p>Native SMB / Samba &amp; WebDAV shares (<code>smb://</code> or <code>\\server\share</code>) plus Trash fallback.</p>
+        </div>
+        <div class="linux-helper-card glass">
+          <code>udisks2 (udisksctl)</code>
+          <p>Eject USB drives cleanly and mount ISO / IMG disk images straight from the sidebar.</p>
+        </div>
+        <div class="linux-helper-card glass">
+          <code>mpv · poppler (pdftoppm)</code>
+          <p>Embedded <code>mpv</code> video &amp; music playback inside Quick Preview, plus crisp PDF previews.</p>
+        </div>
+        <div class="linux-helper-card glass">
+          <code>ffmpeg · imagemagick · rclone · kdeconnect</code>
+          <p>Video/audio/HEIC/AVIF conversion, Google Drive &amp; Dropbox FUSE mounts, and Share › Send to phone.</p>
+        </div>
+      </div>
+
+      <div class="parity-table-wrap glass reveal reveal-delay-3">
+        <h3 style="font-size:1.1rem;margin-bottom:10px;">Windows &amp; Linux Feature Parity</h3>
+        <table class="parity-table">
+          <thead>
+            <tr>
+              <th>Area</th>
+              <th>Windows (WPF)</th>
+              <th>Linux (Avalonia)</th>
+            </tr>
+          </thead>
+          <tbody id="linux-parity-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
 
   <!-- =====================================================================
        SECTION 2: INTERACTIVE MAIN WINDOW ANATOMY
@@ -356,17 +434,17 @@
       <div class="studio-grid reveal reveal-delay-1">
         <div class="glass" style="border-radius:var(--radius-xl);padding:26px;">
           <h3 style="font-size:1.25rem;margin-bottom:4px;">Click to Restyle Live</h3>
-          <p style="font-size:0.84rem;color:var(--subtext);">9 Community favourites + 6 Editor classics + live <strong>System / Wallpaper</strong> sync (reads <code>~/.cache/wal/colors.json</code> for pywal/winwal or your Windows accent colour).</p>
+          <p style="font-size:0.84rem;color:var(--subtext);">9 Community favourites + 6 Editor classics + live <strong>System / Wallpaper</strong> sync (reads <code>~/.cache/wal/colors.json</code> for pywal/winwal, or your KDE Plasma, GNOME, or Windows accent colour).</p>
 
           <div class="theme-swatches-grid" id="theme-swatches-grid"></div>
 
           <div class="mica-control">
             <label for="mica-slider">
-              <span>Windows 11 Translucent Mica Glass</span>
+              <span>Translucent Glass (Windows 11 Mica · Linux Compositor Blur)</span>
               <span id="mica-value" style="color:var(--accent);">22%</span>
             </label>
             <input id="mica-slider" type="range" min="5" max="90" value="22" />
-            <p style="font-size:0.75rem;color:var(--subtext);margin-top:6px;">In Orbit, transparency ranges from 5% to 90% — keeping the sidebar clearer than the file list so filenames stay crisp across all windows.</p>
+            <p style="font-size:0.75rem;color:var(--subtext);margin-top:6px;">5% to 90% transparency on Windows 11 Mica and Linux compositors (KDE Plasma, Hyprland, picom) — keeping the sidebar clearer than the file list so names stay crisp.</p>
           </div>
         </div>
 
@@ -446,7 +524,11 @@
               <span style="background:#F9E2AF;"></span>
               <span style="background:#A6E3A1;"></span>
             </div>
-            <span>PowerShell — Click any command to copy</span>
+            <span id="cli-terminal-title">Linux Shell (bash / zsh) — Click any command to copy</span>
+            <div style="display:flex;gap:6px;">
+              <button class="pill-tab active" type="button" data-cli-os="linux" style="padding:3px 10px;font-size:0.72rem;">Linux</button>
+              <button class="pill-tab" type="button" data-cli-os="windows" style="padding:3px 10px;font-size:0.72rem;">Windows</button>
+            </div>
           </div>
           <div class="cli-list" id="cli-list"></div>
         </div>
@@ -488,8 +570,8 @@
           <p>Background multi-drive indexer with binary cache and highlighted subsequence scoring.</p>
         </div>
         <div class="arch-card glass">
-          <code>Network.cs · RecycleBin.cs · installer\</code>
-          <p>SSH.NET SFTP client, SMB/WebDAV/Cloud mounts, native Recycle Bin records, and OrbitSetup.exe.</p>
+          <code>linux/Orbit.Linux.csproj · linux/src/*</code>
+          <p>Native Avalonia 11 Linux edition: GVfs, udisks2, freedesktop Trash, mpv, pdftoppm, Svg.Skia, &amp; install.sh.</p>
         </div>
       </div>
     </div>
@@ -502,11 +584,11 @@
     <div class="container">
       <div class="cta-banner glass-strong reveal">
         <span class="section-kicker">Ready for Liftoff</span>
-        <h2>Put Your Windows Files in <span class="gradient-text">Orbit</span></h2>
-        <p>Free, open-source under the MIT License, self-contained, and crafted for speed and calm.</p>
+        <h2>Put Your Files in <span class="gradient-text">Orbit</span></h2>
+        <p>Free, open-source under the MIT License, self-contained for Linux and Windows, and crafted for speed and calm.</p>
         <div class="hero-cta-row" style="margin-bottom:0;">
-          <a class="btn btn-primary" href="https://github.com/danny19862025/orbit-file-manager/releases/latest" target="_blank" rel="noopener">⬇ Download OrbitSetup-1.0.0.exe</a>
-          <a class="btn btn-secondary" href="https://github.com/danny19862025/orbit-file-manager" target="_blank" rel="noopener">GitHub Repository</a>
+          <a class="btn btn-primary" href="https://github.com/danny19862025/orbit-file-manager/releases/latest/download/Orbit-1.0.0-linux-x64.tar.gz" target="_blank" rel="noopener">🐧 Download for Linux (.tar.gz)</a>
+          <a class="btn btn-secondary" href="https://github.com/danny19862025/orbit-file-manager/releases/latest/download/OrbitSetup-1.0.0.exe" target="_blank" rel="noopener">⬇ Download for Windows (.exe)</a>
           <a class="btn btn-ghost" href="https://buymeacoffee.com/danny1986" target="_blank" rel="noopener">☕ Buy Me a Coffee</a>
         </div>
       </div>
@@ -516,12 +598,12 @@
   <footer>
     <div class="container">
       <p style="margin-bottom:8px;">
-        <strong>Orbit File Manager</strong> · MIT License ·
+        <strong>Orbit File Manager</strong> · Linux &amp; Windows · MIT License ·
         <a href="https://github.com/danny19862025/orbit-file-manager" target="_blank" rel="noopener">github.com/danny19862025/orbit-file-manager</a> ·
         <a href="https://github.com/danny19862025/orbit-file-manager/issues" target="_blank" rel="noopener">Report a bug</a>
       </p>
       <p style="font-size:0.78rem;opacity:0.8;">
-        Built with .NET 10 WPF, SSH.NET, SharpCompress, SharpVectors, Material Icon Theme, Papirus, Adwaita, Colloid, Candy, Phosphor &amp; Devicon.
+        Built with .NET 10, Avalonia 11 (Linux), WPF (Windows), SSH.NET, SharpCompress, Svg.Skia, SharpVectors, Fluent UI System Icons, Material Icon Theme, Papirus, Adwaita, Colloid, Candy, Phosphor &amp; Devicon.
       </p>
     </div>
   </footer>
