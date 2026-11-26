@@ -104,10 +104,14 @@ public partial class MainWindow : Window
         if (!string.IsNullOrWhiteSpace(startPath))
         {
             var p = startPath.Trim('"');
-            if (!Archives.IsArc(p)) { try { p = IOPath.GetFullPath(p); } catch { } }
-            if (previewPath == null && File.Exists(p) && Archives.IsArchiveFile(p))
+            if (p.Equals("shell:RecycleBinFolder", StringComparison.OrdinalIgnoreCase)) p = RecycleBin.Path;
+            if (RecycleBin.Is(p)) { paths.Add(p); p = null; }
+            else if (!Archives.IsArc(p)) { try { p = IOPath.GetFullPath(p); } catch { } }
+            if (p == null) { /* Recycle Bin */ }
+            else if (previewPath == null && File.Exists(p) && Archives.IsArchiveFile(p))
                 p = Archives.Make(p, ""); // "Open with Orbit" on an archive opens it like a folder
-            if (Archives.IsArc(p))
+            if (p == null) { }
+            else if (Archives.IsArc(p))
             {
                 if (File.Exists(Archives.Parse(p).archive)) paths.Add(p);
             }
@@ -206,6 +210,7 @@ public partial class MainWindow : Window
         S.Theme = Themes.Find(name).Name;
         S.Translucent = translucent;
         Themes.Apply(S.Theme, S.Translucent);
+        if (IconPack.Tinted && IsLoaded) RefreshIcons();
         ApplyBackdrop();
         UpdateStar();
         SaveSoon();
@@ -320,7 +325,8 @@ public partial class MainWindow : Window
     // =====================================================================
     // Path helpers
     // =====================================================================
-    static bool IsTag(string p) => p != null && p.StartsWith("tag:", StringComparison.Ordinal);
+    /// <summary>A virtual list of real files rather than a folder: a tag view, or the Recycle Bin.</summary>
+    static bool IsTag(string p) => p != null && (p.StartsWith("tag:", StringComparison.Ordinal) || RecycleBin.Is(p));
     static bool Same(string a, string b) => string.Equals(a, b, StringComparison.OrdinalIgnoreCase);
     static bool SafeDirExists(string p) { try { return !string.IsNullOrWhiteSpace(p) && Directory.Exists(p); } catch { return false; } }
 
@@ -344,6 +350,7 @@ public partial class MainWindow : Window
     public static string Display(string p)
     {
         if (string.IsNullOrEmpty(p)) return "";
+        if (RecycleBin.Is(p)) return "Recycle Bin";
         if (IsTag(p)) return p[4..];
         if (Archives.IsArc(p)) { try { return Archives.NameOf(p); } catch { return p; } }
         if (IsRemote(p)) { try { return Sftp.NameOf(p); } catch { return p; } }
@@ -391,7 +398,7 @@ public partial class MainWindow : Window
         Add("Pictures", "", Environment.GetFolderPath(Environment.SpecialFolder.MyPictures));
         Add("Music", "", Environment.GetFolderPath(Environment.SpecialFolder.MyMusic));
         Add("Videos", "", Environment.GetFolderPath(Environment.SpecialFolder.MyVideos));
-        Places.Add(new SideItem { Name = "Recycle Bin", Glyph = "", Path = "shell:RecycleBinFolder", Kind = "recycle", ToolTipText = "Opens the Recycle Bin in Explorer" });
+        Places.Add(new SideItem { Name = "Recycle Bin", Glyph = "", Path = RecycleBin.Path, Kind = "recycle", ToolTipText = "Restore or permanently delete items; drop files here to delete them" });
         foreach (var p in S.CustomPlaces)
             if (SafeDirExists(p)) Places.Add(new SideItem { Name = Display(p), Glyph = "", Path = Norm(p), Kind = "pinned", ToolTipText = p });
     }
@@ -531,7 +538,7 @@ public partial class MainWindow : Window
     {
         if (s.Kind == "recycle")
         {
-            try { Shell.OpenInExplorer("shell:RecycleBinFolder"); } catch (Exception ex) { Toast(ex.Message); }
+            if (newTab) AddTab(RecycleBin.Path, true); else Navigate(RecycleBin.Path);
             return;
         }
         if (s.Kind == "connect") { ShowConnectDialog(null); return; }
@@ -570,7 +577,7 @@ public partial class MainWindow : Window
         }
         if (s.Kind == "recycle")
         {
-            menu.Items.Add(MI("Open", "", () => OpenSide(s, false)));
+            AddRecycleSideItems(menu, s);
         }
         else
         {
@@ -604,7 +611,9 @@ public partial class MainWindow : Window
     void SideItem_DragOver(object sender, DragEventArgs e)
     {
         e.Effects = DragDropEffects.None;
-        if (((FrameworkElement)sender).Tag is SideItem s && !IsTag(s.Path) && s.Kind != "recycle" && TryGetDropFiles(e.Data, out var files))
+        if (((FrameworkElement)sender).Tag is SideItem r && r.Kind == "recycle" && TryGetDropFiles(e.Data, out _))
+            e.Effects = DragDropEffects.Move;
+        else if (((FrameworkElement)sender).Tag is SideItem s && !IsTag(s.Path) && s.Kind != "recycle" && TryGetDropFiles(e.Data, out var files))
             e.Effects = ChooseEffect(e, files, s.Path);
         e.Handled = true;
     }
@@ -612,7 +621,9 @@ public partial class MainWindow : Window
     void SideItem_Drop(object sender, DragEventArgs e)
     {
         e.Handled = true;
-        if (((FrameworkElement)sender).Tag is SideItem s && !IsTag(s.Path) && s.Kind != "recycle" && TryGetDropFiles(e.Data, out var files))
+        if (((FrameworkElement)sender).Tag is SideItem r && r.Kind == "recycle" && TryGetDropFiles(e.Data, out var binned))
+            RecycleDropped(binned);
+        else if (((FrameworkElement)sender).Tag is SideItem s && !IsTag(s.Path) && s.Kind != "recycle" && TryGetDropFiles(e.Data, out var files))
             DoTransfer(files, s.Path, ChooseEffect(e, files, s.Path));
     }
 
@@ -788,7 +799,7 @@ public partial class MainWindow : Window
         });
 
         List<string> tagPaths = null;
-        if (IsTag(path))
+        if (IsTag(path) && !RecycleBin.Is(path))
         {
             var tag = path[4..];
             tagPaths = S.Tags.Where(kv => kv.Value.Contains(tag)).Select(kv => kv.Key).ToList();
@@ -810,7 +821,7 @@ public partial class MainWindow : Window
         {
             try
             {
-                result = await Task.Run(() => tagPaths != null ? FromPaths(tagPaths) : Archives.IsArc(path) ? Archives.List(path) : remote ? Sftp.List(path) : Enumerate(path));
+                result = await Task.Run(() => RecycleBin.Is(path) ? RecycleBin.List() : tagPaths != null ? FromPaths(tagPaths) : Archives.IsArc(path) ? Archives.List(path) : remote ? Sftp.List(path) : Enumerate(path));
             }
             catch (Exception ex) when (remote) { err = Sftp.Describe(ex); }
             catch (Exception ex) when (Archives.IsArc(path)) { err = ArchiveError(ex); }
@@ -929,9 +940,11 @@ public partial class MainWindow : Window
         UpBtn.IsEnabled = ParentOf(p) != null;
         UpdateStar();
         MarkActive();
+        SetHeaders(); // the Recycle Bin shows Date deleted / Original location
 
         Crumbs.Clear();
-        if (IsTag(p))
+        if (RecycleBin.Is(p)) Crumbs.Add(new Crumb { Name = "Recycle Bin", Path = p, IsLast = true });
+        else if (IsTag(p))
         {
             Crumbs.Add(new Crumb { Name = "Tags", Path = null });
             Crumbs.Add(new Crumb { Name = p[4..], Path = p, IsLast = true });
@@ -987,7 +1000,7 @@ public partial class MainWindow : Window
         string msg = null, glyph = "";
         if (loadError != null) { msg = loadError; glyph = ""; }
         else if (!loading && items.Count == 0)
-            msg = IsTag(current?.Path) ? "Nothing has this tag yet" : "This folder is empty";
+            msg = RecycleBin.Is(current?.Path) ? "The Recycle Bin is empty" : IsTag(current?.Path) ? "Nothing has this tag yet" : "This folder is empty";
         else if (!loading && dirs + files == 0)
         {
             if (searchText.Length > 0 || FiltersActive) { msg = searchText.Length > 0 ? $"No items match “{searchText}”" : "Nothing here matches the filter — Filter › Clear filters"; glyph = ""; }
@@ -1138,6 +1151,7 @@ public partial class MainWindow : Window
     void OpenItems(List<FileItem> sel, bool newTab = false)
     {
         if (sel.Count == 0) return;
+        if (sel.Any(f => f.IsRecycled)) { Toast(RecycledHint); return; }
         if (sel.Count == 1 && sel[0].IsDir && !newTab)
         {
             Navigate(sel[0].FullPath);
@@ -1224,6 +1238,7 @@ public partial class MainWindow : Window
         if (Math.Abs(pos.X - dragStart.Value.X) < SystemParameters.MinimumHorizontalDragDistance &&
             Math.Abs(pos.Y - dragStart.Value.Y) < SystemParameters.MinimumVerticalDragDistance) return;
         if (dragItem.IsRenaming) return;
+        if (dragItem.IsRecycled) { dragStart = null; dragItem = null; return; }
         if (dragItem.InArchive)
         {
             var arcSel = list.SelectedItems.Contains(dragItem) ? Selected() : new List<FileItem> { dragItem };
@@ -1732,7 +1747,8 @@ public partial class MainWindow : Window
     void SetHeaders()
     {
         headerKeys.Clear();
-        foreach (var (col, key, text) in new[] { (ColName, "name", "Name"), (ColDate, "date", "Date modified"), (ColType, "type", "Type"), (ColSize, "size", "Size") })
+        bool bin = RecycleBin.Is(current?.Path);
+        foreach (var (col, key, text) in new[] { (ColName, "name", "Name"), (ColDate, "date", bin ? "Date deleted" : "Date modified"), (ColType, "type", bin ? "Original location" : "Type"), (ColSize, "size", "Size") })
         {
             headerKeys[col] = key;
             var sp = new StackPanel { Orientation = Orientation.Horizontal };
@@ -1792,6 +1808,7 @@ public partial class MainWindow : Window
     {
         var sel = Selected();
         if (sel.Count == 0) return;
+        if (sel.Any(f => f.IsRecycled)) { Toast(RecycledHint); return; }
         if (sel.Any(f => f.InArchive)) { if (cut) Toast(ReadOnlyArchive); else CopyArchivedToClipboard(sel); return; }
         if (sel.Any(f => f.IsRemote))
         {
@@ -1951,6 +1968,7 @@ public partial class MainWindow : Window
             Toast("A name can't contain any of these characters:  \\ / : * ? \" < > |");
             return;
         }
+        if (f.IsRecycled) { Toast(RecycledHint); return; }
         if (f.InArchive) { Toast(ReadOnlyArchive); return; }
         if (f.IsRemote) { CommitRemoteRename(f, newName); return; }
         var dir = SafeParent(f.FullPath);
@@ -2013,6 +2031,7 @@ public partial class MainWindow : Window
     {
         var sel = Selected();
         if (sel.Count == 0) return;
+        if (sel.Any(f => f.IsRecycled)) { DeleteRecycled(sel); return; }
         if (sel.Any(f => f.InArchive)) { Toast(ReadOnlyArchive); return; }
         if (sel.Any(f => f.IsRemote)) { DeleteRemote(sel); return; }
         if (permanent)
@@ -2144,6 +2163,7 @@ public partial class MainWindow : Window
         var sel = Selected();
         var menu = new ContextMenu();
         bool tagView = IsTag(current.Path);
+        if (RecycleBin.Is(current.Path)) { ShowRecycleMenu(list, anchor, sel); return; }
         if (Archives.IsArc(current.Path)) { ShowArchiveMenu(list, anchor, sel); return; }
         if (IsRemote(current.Path)) { ShowRemoteMenu(list, anchor, sel); return; }
 

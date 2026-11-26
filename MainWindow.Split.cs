@@ -30,6 +30,7 @@ public partial class MainWindow
     internal void OpenSplit(string path)
     {
         if (string.IsNullOrEmpty(path) || IsTag(path)) path = current?.Path ?? Home;
+        if (IsTag(path)) path = Home;
         if (!LocationExists(path)) { Toast("That folder isn't available"); return; }
         if (!SplitOpen) splitBack.Clear();
         else if (!Same(splitPath, path)) splitBack.Push(splitPath);

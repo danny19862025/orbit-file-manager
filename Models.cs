@@ -73,6 +73,7 @@ public sealed class FileItem : ObservableObject
         {
             var s = Name + "\n" + TypeName;
             if (!IsDir) s += " · " + SizeText;
+            if (IsRecycled) return Name + (IsDir ? "" : "\n" + SizeText) + "\nFrom " + TypeName + "\nDeleted " + ModifiedText;
             if (ModifiedText.Length > 0) s += "\nModified " + ModifiedText;
             return s;
         }
@@ -164,6 +165,25 @@ public sealed class FileItem : ObservableObject
         f.Size = dir ? -1 : size;
         f.Ext = dir ? "" : Path.GetExtension(name).ToLowerInvariant();
         f.TypeName = IconService.TypeName(f.Ext, dir);
+        return f;
+    }
+
+    /// <summary>Where a Recycle Bin item was deleted from (null for everything else).</summary>
+    public string OriginalPath { get; private set; }
+    public bool IsRecycled => OriginalPath != null;
+
+    /// <summary>An item in the Recycle Bin: shown under its original name, with the deletion time as its date.</summary>
+    public static FileItem Recycled(string dataPath, string originalPath, DateTime deleted, long size, bool dir)
+    {
+        var name = Path.GetFileName(originalPath.TrimEnd('\\'));
+        if (string.IsNullOrEmpty(name)) name = originalPath;
+        var f = new FileItem { name = name, FullPath = dataPath, IsDir = dir, OriginalPath = originalPath };
+        // the Type column shows where the item came from
+        f.Attributes = dir ? FileAttributes.Directory : FileAttributes.Normal;
+        f.Modified = deleted;
+        f.Size = dir ? -1 : size;
+        f.Ext = dir ? "" : Path.GetExtension(name).ToLowerInvariant();
+        f.TypeName = Path.GetDirectoryName(originalPath) ?? originalPath; // the Type column shows where it came from
         return f;
     }
 
