@@ -74,8 +74,21 @@ public partial class SettingsWindow : Window
     void BuildThemeCards()
     {
         ThemeCards.Children.Clear();
-        foreach (var t in Themes.All)
+        var entries = new System.Collections.Generic.List<object>();
+        foreach (var (title, items) in Themes.Groups) { entries.Add(title); entries.AddRange(items); }
+        entries.Add("Dynamic");
+        entries.Add(WallpaperTheme.Build());
+        foreach (var entry in entries)
         {
+            if (entry is string heading)
+            {
+                var h = new TextBlock { Text = heading, FontSize = 12.5, FontWeight = FontWeights.SemiBold, Margin = new Thickness(2, ThemeCards.Children.Count == 0 ? 0 : 6, 0, 8) };
+                h.SetResourceReference(TextBlock.ForegroundProperty, "SectionBrush");
+                h.SetBinding(WidthProperty, new System.Windows.Data.Binding(nameof(ActualWidth)) { Source = ThemeCards });
+                ThemeCards.Children.Add(h);
+                continue;
+            }
+            var t = (ThemeDef)entry;
             bool selected = Themes.Current.Name == t.Name;
             Brush B(string hex) => new SolidColorBrush((Color)ColorConverter.ConvertFromString(hex));
 
@@ -123,7 +136,7 @@ public partial class SettingsWindow : Window
             }
             nameRow.Children.Add(new TextBlock { Text = t.Name, FontWeight = FontWeights.SemiBold });
             stack.Children.Add(nameRow);
-            var desc = new TextBlock { Text = t.Description, FontSize = 12 };
+            var desc = new TextBlock { Text = t.Description, FontSize = 12, TextWrapping = TextWrapping.Wrap };
             desc.SetResourceReference(TextBlock.ForegroundProperty, "MutedBrush");
             stack.Children.Add(desc);
 
@@ -131,7 +144,7 @@ public partial class SettingsWindow : Window
             {
                 Width = 166, Margin = new Thickness(0, 0, 12, 12), Padding = new Thickness(8), CornerRadius = new CornerRadius(11),
                 BorderThickness = new Thickness(selected ? 2 : 1), Cursor = Cursors.Hand, Child = stack, Tag = t.Name,
-                ToolTip = selected ? "Current theme" : "Use " + t.Name
+                ToolTip = t.Name == Themes.WallpaperName ? "Follows your desktop: " + WallpaperTheme.Source + "\nUpdates by itself when pywal or your Windows accent colour changes." : selected ? "Current theme" : "Use " + t.Name
             };
             card.SetResourceReference(Border.BackgroundProperty, "PanelBg");
             card.SetResourceReference(Border.BorderBrushProperty, selected ? "AccentBrush" : "LineBrush");

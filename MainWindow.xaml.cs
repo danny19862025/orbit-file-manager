@@ -154,6 +154,7 @@ public partial class MainWindow : Window
         RestoreSplit();
         if (PendingSpacePath != null) { var sp = PendingSpacePath; PendingSpacePath = null; Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () => OpenSpace(sp)); }
         if (PendingConvertPath != null) { var cp = PendingConvertPath; PendingConvertPath = null; Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () => OpenConvertPaths(new List<string> { cp })); }
+        WallpaperTheme.Watch(() => Dispatcher.BeginInvoke(() => { if (S.Theme == Themes.WallpaperName) ApplyTheme(S.Theme, S.Translucent); }));
         if (PendingLock is { } pl) { PendingLock = null; Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () => OpenLock(pl.Path, pl.Locking)); }
         _ = Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, () => SearchService.Start());
         FitTabs();
@@ -187,7 +188,7 @@ public partial class MainWindow : Window
     void Theme_Click(object sender, RoutedEventArgs e)
     {
         var menu = new ContextMenu { PlacementTarget = (UIElement)sender, Placement = PlacementMode.Bottom };
-        foreach (var t in Themes.All)
+        foreach (var t in Themes.All.Append(WallpaperTheme.Build()))
         {
             var def = t;
             var mi = MI(def.Name, null, () => ApplyTheme(def.Name, S.Translucent));
