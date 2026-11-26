@@ -394,6 +394,52 @@
         </DataTrigger>
       </DataTemplate.Triggers>
     </DataTemplate>
+
+    <!-- ===== Split pane rows ===== -->
+    <DataTemplate x:Key="SplitRowTemplate" DataType="{x:Type local:FileItem}">
+      <DockPanel x:Name="Root">
+        <TextBlock DockPanel.Dock="Right" Text="{Binding SizeText}" Foreground="{DynamicResource MutedBrush}" FontSize="12" VerticalAlignment="Center" Margin="10,0,4,0"/>
+        <Image DockPanel.Dock="Left" Source="{Binding SmallIcon}" Width="16" Height="16" Margin="0,0,9,0" RenderOptions.BitmapScalingMode="HighQuality"/>
+        <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+      </DockPanel>
+      <DataTemplate.Triggers>
+        <DataTrigger Binding="{Binding IsHidden}" Value="True">
+          <Setter TargetName="Root" Property="Opacity" Value="0.55"/>
+        </DataTrigger>
+      </DataTemplate.Triggers>
+    </DataTemplate>
+
+    <Style x:Key="SplitItemStyle" TargetType="ListBoxItem">
+      <Setter Property="Margin" Value="6,0"/>
+      <Setter Property="Padding" Value="6,4"/>
+      <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+      <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+      <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+      <Setter Property="ToolTip" Value="{Binding Tip}"/>
+      <Setter Property="ToolTipService.InitialShowDelay" Value="1200"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="ListBoxItem">
+            <Border x:Name="Bd" Background="Transparent" BorderBrush="Transparent" BorderThickness="1" CornerRadius="6" Padding="{TemplateBinding Padding}">
+              <ContentPresenter/>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource HoverBg}"/>
+              </Trigger>
+              <Trigger Property="IsSelected" Value="True">
+                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SelectedBg}"/>
+                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource SelBorderBrush}"/>
+              </Trigger>
+              <DataTrigger Binding="{Binding IsDropTarget}" Value="True">
+                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SelectedBg}"/>
+                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+              </DataTrigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
   </Window.Resources>
 
   <Border x:Name="Root" BorderBrush="{DynamicResource RootBorder}" BorderThickness="1">
@@ -730,6 +776,16 @@
             <TextBlock x:Name="DropHintText" Foreground="{DynamicResource TextBrush}"/>
           </Border>
 
+          <!-- "Drop to split" target shown while a tab is dragged over the right half -->
+          <Border x:Name="SplitDropZone" HorizontalAlignment="Right" Width="420" Margin="0,8,10,8" CornerRadius="12" BorderThickness="2"
+                  BorderBrush="{DynamicResource AccentBrush}" Background="{DynamicResource SelectedBg}" Opacity="0.9"
+                  IsHitTestVisible="False" Visibility="Collapsed">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+              <TextBlock Text="&#xE8A0;" FontFamily="{StaticResource IconFont}" FontSize="30" Foreground="{DynamicResource AccentBrush}" HorizontalAlignment="Center"/>
+              <TextBlock x:Name="SplitDropText" Text="Drop to split" Foreground="{DynamicResource AccentBrush}" FontWeight="SemiBold" FontSize="15" Margin="0,10,0,0" HorizontalAlignment="Center"/>
+            </StackPanel>
+          </Border>
+
           <!-- Marquee (box) selection -->
           <Canvas x:Name="MarqueeCanvas" IsHitTestVisible="False" ClipToBounds="True">
             <Rectangle x:Name="Marquee" Visibility="Collapsed" RadiusX="3" RadiusY="3" StrokeThickness="1"
@@ -742,6 +798,50 @@
             <TextBlock x:Name="ToastText" Foreground="{DynamicResource TextBrush}" TextWrapping="Wrap" MaxWidth="520"/>
           </Border>
         </Grid>
+
+        <!-- Split pane (second folder side by side) -->
+        <Border x:Name="SplitHost" Grid.Row="3" HorizontalAlignment="Right" Width="460" Visibility="Collapsed"
+                BorderThickness="1,0,0,0" BorderBrush="{DynamicResource LineBrush}" Background="{DynamicResource ContentBg}"
+                AllowDrop="True" DragOver="Split_DragOver" DragLeave="Split_DragLeave" Drop="Split_Drop">
+          <Grid>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"/>
+              <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <DockPanel Margin="8,2,6,6">
+              <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
+                <Button x:Name="SplitBackBtn" Style="{StaticResource IconButton}" Content="&#xE72B;" FontSize="13" ToolTip="Back" Click="SplitBack_Click"/>
+                <Button x:Name="SplitUpBtn" Style="{StaticResource IconButton}" Content="&#xE74A;" FontSize="13" ToolTip="Up" Click="SplitUp_Click"/>
+              </StackPanel>
+              <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                <Button Style="{StaticResource IconButton}" Content="&#xE72C;" FontSize="13" ToolTip="Refresh" Click="SplitRefresh_Click"/>
+                <Button Style="{StaticResource IconButton}" Content="&#xE8AB;" FontSize="13" ToolTip="Swap panes" Click="SplitSwap_Click"/>
+                <Button Style="{StaticResource IconButton}" Content="&#xE711;" FontSize="12" ToolTip="Close split view (Ctrl+\)" Click="SplitClose_Click"/>
+              </StackPanel>
+              <StackPanel VerticalAlignment="Center" Margin="8,0" Cursor="Hand" Background="Transparent" MouseLeftButtonUp="SplitTitle_Click"
+                          ToolTip="Open this folder in the main pane">
+                <TextBlock x:Name="SplitTitle" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                <TextBlock x:Name="SplitSub" FontSize="11.5" Foreground="{DynamicResource MutedBrush}" TextTrimming="CharacterEllipsis"/>
+              </StackPanel>
+            </DockPanel>
+            <ListBox x:Name="SplitList" Grid.Row="1" Style="{StaticResource FlatList}" Padding="0,2"
+                     ItemContainerStyle="{StaticResource SplitItemStyle}" ItemTemplate="{StaticResource SplitRowTemplate}"
+                     SelectionMode="Extended" IsSynchronizedWithCurrentItem="False"
+                     VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.ScrollUnit="Pixel"
+                     IsTextSearchEnabled="True" TextSearch.TextPath="Name"
+                     MouseDoubleClick="SplitList_DoubleClick" MouseRightButtonUp="SplitList_RightClick"
+                     PreviewMouseLeftButtonDown="SplitList_PreviewMouseDown" PreviewMouseMove="SplitList_PreviewMouseMove"
+                     PreviewMouseLeftButtonUp="SplitList_PreviewMouseUp" MouseUp="SplitList_MouseUp"/>
+            <TextBlock x:Name="SplitEmpty" Grid.Row="1" Foreground="{DynamicResource MutedBrush}" HorizontalAlignment="Center"
+                       VerticalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Margin="20" IsHitTestVisible="False"/>
+            <Thumb x:Name="SplitGrip" Grid.RowSpan="2" HorizontalAlignment="Left" Width="8" Margin="-4,0,0,0" Cursor="SizeWE"
+                   DragDelta="SplitGrip_DragDelta" DragCompleted="SplitGrip_DragCompleted">
+              <Thumb.Template>
+                <ControlTemplate TargetType="Thumb"><Border Background="Transparent"/></ControlTemplate>
+              </Thumb.Template>
+            </Thumb>
+          </Grid>
+        </Border>
 
         <!-- Bottom bar -->
         <Grid Grid.Row="4" Margin="12,6,12,10">

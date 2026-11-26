@@ -40,6 +40,7 @@ public partial class MainWindow
         new("detailsView", "View", "Details view", "Ctrl+Shift+D2", KeyScope.Anywhere),
         new("columnsView", "View", "Columns view", "Ctrl+Shift+D3", KeyScope.Anywhere),
         new("treeView", "View", "Tree view", "Ctrl+Shift+D4", KeyScope.Anywhere),
+        new("split", "View", "Split view", "Ctrl+Oem5", KeyScope.Anywhere),
 
         new("newFolder", "Files", "New folder", "Ctrl+Shift+N", KeyScope.Anywhere),
         new("rename", "Files", "Rename", "F2", KeyScope.InFileList),
@@ -83,6 +84,7 @@ public partial class MainWindow
         ["detailsView"] = () => { SetView("details"); UpdateCommandBar(); },
         ["columnsView"] = () => { SetView("columns"); UpdateCommandBar(); },
         ["treeView"] = () => { SetView("tree"); UpdateCommandBar(); },
+        ["split"] = ToggleSplit,
         ["newFolder"] = NewFolder,
         ["rename"] = BeginRenameSelected,
         ["copy"] = () => CopyToClipboard(false),

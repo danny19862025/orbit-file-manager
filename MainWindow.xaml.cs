@@ -147,6 +147,7 @@ public partial class MainWindow : Window
     {
         IconService.Scale = VisualTreeHelper.GetDpi(this).DpiScaleX;
         SwitchTo(startTab);
+        RestoreSplit();
         _ = Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, () => SearchService.Start());
         FitTabs();
     }
@@ -1393,6 +1394,7 @@ public partial class MainWindow : Window
 
     void Content_DragOver(object sender, DragEventArgs e)
     {
+        if (TabDragOverContent(e)) return;
         e.Effects = DragDropEffects.None;
         e.Handled = true;
         if (!TryGetDropFiles(e.Data, out var files)) { SetDropTarget(null); ShowDropFeedback(null, DragDropEffects.None, null); return; }
@@ -1405,6 +1407,7 @@ public partial class MainWindow : Window
 
     void Content_DragLeave(object sender, DragEventArgs e)
     {
+        SplitDropZone.Visibility = Visibility.Collapsed;
         // DragLeave also fires when moving between child elements; only clear when the pointer really left.
         var p = e.GetPosition(ContentHost);
         if (p.X >= 0 && p.Y >= 0 && p.X < ContentHost.ActualWidth && p.Y < ContentHost.ActualHeight) return;
@@ -1414,6 +1417,7 @@ public partial class MainWindow : Window
 
     void Content_Drop(object sender, DragEventArgs e)
     {
+        if (TabDropOnContent(e)) return;
         e.Handled = true;
         SetDropTarget(null);
         ShowDropFeedback(null, DragDropEffects.None, null);
@@ -1468,6 +1472,13 @@ public partial class MainWindow : Window
         }
         if (previewOpen && !inList && !inText && key is Key.Left or Key.Right or Key.Up or Key.Down or Key.Home or Key.End)
             FocusList();
+
+        // Keys for the split pane when it has focus
+        if (SplitList.IsKeyboardFocusWithin && !inText && HandleSplitKey(key, m))
+        {
+            e.Handled = true;
+            return;
+        }
 
         // Reassignable shortcuts (Settings › Shortcuts)
         if (RunShortcut(key, m, inText, inList))
@@ -2163,6 +2174,7 @@ public partial class MainWindow : Window
             bool allDirs = sel.All(f => f.IsDir);
             menu.Items.Add(MI("Open", "", () => OpenItems(sel), "Enter"));
             if (allDirs) menu.Items.Add(MI(sel.Count == 1 ? "Open in new tab" : "Open in new tabs", "", () => OpenItems(sel, true)));
+            if (allDirs && sel.Count == 1) menu.Items.Add(MI("Open in split view", "", () => OpenSplit(first.FullPath), "Ctrl+\\"));
             if (sel.Count == 1 && !first.IsDir) menu.Items.Add(MI("Open with…", "", () => Shell.OpenWith(first.FullPath)));
             AddArchiveItemsToMenu(menu, sel);
             if (tagView) menu.Items.Add(MI("Show in folder", "", () => Navigate(SafeParent(first.FullPath), first.FullPath)));

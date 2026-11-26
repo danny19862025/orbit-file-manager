@@ -203,6 +203,11 @@ public partial class MainWindow
             mi.IsChecked = S.ViewMode == mode;
             menu.Items.Add(mi);
         }
+        var split = MI("Split view (second pane)", "", ToggleSplit, PrettyGesture(GestureFor("split")));
+        split.IsChecked = SplitOpen;
+        split.ToolTip = "Tip: drag a tab onto the right half of the window to split";
+        menu.Items.Add(new Separator());
+        menu.Items.Add(split);
         menu.Items.Add(new Separator());
         var hidden = MI("Hidden items", "", ToggleHidden, "Ctrl+H");
         hidden.IsChecked = S.ShowHidden;

@@ -33,6 +33,8 @@ public sealed class AppSettings
     public string Theme { get; set; } = "Catppuccin Mocha";
     public bool Translucent { get; set; }
     public bool RestoreTabs { get; set; } = true;
+    public string SplitPath { get; set; }
+    public double SplitWidth { get; set; } = 460;
     public List<string> CustomPlaces { get; set; } = new();
     public List<string> HiddenSections { get; set; } = new();
     public Dictionary<string, string> Keymap { get; set; } = new();

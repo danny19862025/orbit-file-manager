@@ -31,6 +31,8 @@
     <SolidColorBrush x:Key="FaintBrush" Color="#585B70"/>
     <SolidColorBrush x:Key="ToastBg" Color="#313244"/>
 
+    <!-- scroll-viewer corner (where two scrollbars meet) uses this system brush -->
+    <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="Transparent"/>
     <FontFamily x:Key="UiFont">Segoe UI Variable Text, Segoe UI</FontFamily>
     <FontFamily x:Key="IconFont">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
 
