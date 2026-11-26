@@ -104,15 +104,24 @@ public partial class MainWindow : Window
         if (!string.IsNullOrWhiteSpace(startPath))
         {
             var p = startPath.Trim('"');
-            try { p = IOPath.GetFullPath(p); } catch { }
-            bool selectIt = File.Exists(p) || (previewPath != null && Directory.Exists(p) && IOPath.GetDirectoryName(p) != null);
-            if (selectIt)
+            if (!Archives.IsArc(p)) { try { p = IOPath.GetFullPath(p); } catch { } }
+            if (previewPath == null && File.Exists(p) && Archives.IsArchiveFile(p))
+                p = Archives.Make(p, ""); // "Open with Orbit" on an archive opens it like a folder
+            if (Archives.IsArc(p))
             {
-                pendingSelect = p;
-                pendingPreview = previewPath != null;
-                p = IOPath.GetDirectoryName(p);
+                if (File.Exists(Archives.Parse(p).archive)) paths.Add(p);
             }
-            if (Directory.Exists(p)) paths.Add(p);
+            else
+            {
+                bool selectIt = File.Exists(p) || (previewPath != null && Directory.Exists(p) && IOPath.GetDirectoryName(p) != null);
+                if (selectIt)
+                {
+                    pendingSelect = p;
+                    pendingPreview = previewPath != null;
+                    p = IOPath.GetDirectoryName(p);
+                }
+                if (Directory.Exists(p)) paths.Add(p);
+            }
         }
         bool fromArgs = paths.Count > 0;
         if (!fromArgs && S.RestoreTabs)
@@ -312,13 +321,14 @@ public partial class MainWindow : Window
     static bool SafeDirExists(string p) { try { return !string.IsNullOrWhiteSpace(p) && Directory.Exists(p); } catch { return false; } }
 
     static bool IsRemote(string p) => Sftp.IsSftp(p);
-    static bool LocationExists(string p) => IsTag(p) || IsRemote(p) || SafeDirExists(p);
+    static bool LocationExists(string p) => IsTag(p) || IsRemote(p) || Archives.IsArc(p) || SafeDirExists(p);
 
     static string Norm(string p)
     {
         if (string.IsNullOrWhiteSpace(p) || IsTag(p)) return p;
         p = p.Trim();
         if (p.StartsWith("ssh://", StringComparison.OrdinalIgnoreCase)) p = "sftp://" + p[6..];
+        if (Archives.IsArc(p)) return p;
         if (Sftp.IsSftp(p)) { try { return Sftp.Normalize(p); } catch { return p; } }
         if (p.Length == 2 && p[1] == ':') p += "\\";
         try { p = IOPath.GetFullPath(p); } catch { return p; }
@@ -331,6 +341,7 @@ public partial class MainWindow : Window
     {
         if (string.IsNullOrEmpty(p)) return "";
         if (IsTag(p)) return p[4..];
+        if (Archives.IsArc(p)) { try { return Archives.NameOf(p); } catch { return p; } }
         if (IsRemote(p)) { try { return Sftp.NameOf(p); } catch { return p; } }
         if (Same(p, Home)) return "Home";
         var name = IOPath.GetFileName(p.TrimEnd('\\'));
@@ -340,6 +351,7 @@ public partial class MainWindow : Window
     static string ParentOf(string p)
     {
         if (IsTag(p)) return null;
+        if (Archives.IsArc(p)) { try { return Archives.ParentOf(p); } catch { return null; } }
         if (IsRemote(p)) { try { return Sftp.ParentOf(p); } catch { return null; } }
         try { return Directory.GetParent(p)?.FullName; } catch { return null; }
     }
@@ -737,7 +749,7 @@ public partial class MainWindow : Window
     {
         if (current == null) return;
         var parent = ParentOf(current.Path);
-        if (parent != null) Navigate(parent, current.Path);
+        if (parent != null) Navigate(parent, Archives.IsArc(current.Path) ? ArchiveSelectOnUp(current.Path) : current.Path);
     }
 
     void Back_Click(object sender, RoutedEventArgs e) => GoBack();
@@ -793,9 +805,10 @@ public partial class MainWindow : Window
         {
             try
             {
-                result = await Task.Run(() => tagPaths != null ? FromPaths(tagPaths) : remote ? Sftp.List(path) : Enumerate(path));
+                result = await Task.Run(() => tagPaths != null ? FromPaths(tagPaths) : Archives.IsArc(path) ? Archives.List(path) : remote ? Sftp.List(path) : Enumerate(path));
             }
             catch (Exception ex) when (remote) { err = Sftp.Describe(ex); }
+            catch (Exception ex) when (Archives.IsArc(path)) { err = ArchiveError(ex); }
             catch (UnauthorizedAccessException) { err = "You don't have permission to view this folder."; }
             catch (DirectoryNotFoundException) { err = "This folder no longer exists."; }
             catch (Exception ex) { err = ex.Message; }
@@ -813,7 +826,7 @@ public partial class MainWindow : Window
             if (cutPaths.Contains(f.FullPath)) f.IsCut = true;
         }
         ShowItems(result);
-        if (err == null && !IsTag(path) && !remote) StartWatcher(path, ver);
+        if (err == null && !IsTag(path) && !remote && !Archives.IsArc(path)) StartWatcher(path, ver);
 
         var list = ActiveList;
         if (keep != null && keep.Count > 0)
@@ -918,6 +931,7 @@ public partial class MainWindow : Window
             Crumbs.Add(new Crumb { Name = "Tags", Path = null });
             Crumbs.Add(new Crumb { Name = p[4..], Path = p, IsLast = true });
         }
+        else if (Archives.IsArc(p)) { foreach (var c in ArchiveCrumbs(p)) Crumbs.Add(c); }
         else if (IsRemote(p))
         {
             var l = Sftp.Parse(p);
@@ -1132,7 +1146,10 @@ public partial class MainWindow : Window
         for (int i = 0; i < dirs.Count; i++) AddTab(dirs[i].FullPath, i == dirs.Count - 1 && files.Count == 0);
         foreach (var f in files)
         {
-            if (f.IsRemote) OpenRemoteFile(f);
+            if (f.InArchive) OpenArchivedFile(f);
+            else if (!f.IsRemote && Archives.IsArchiveFile(f.FullPath)) Navigate(Archives.Make(f.FullPath, ""));
+            else if (!f.IsRemote && Archives.IsIso(f.FullPath)) MountIso(f.FullPath);
+            else if (f.IsRemote) OpenRemoteFile(f);
             else Try(() => Shell.Open(f.FullPath));
         }
     }
@@ -1201,6 +1218,13 @@ public partial class MainWindow : Window
         if (Math.Abs(pos.X - dragStart.Value.X) < SystemParameters.MinimumHorizontalDragDistance &&
             Math.Abs(pos.Y - dragStart.Value.Y) < SystemParameters.MinimumVerticalDragDistance) return;
         if (dragItem.IsRenaming) return;
+        if (dragItem.InArchive)
+        {
+            var arcSel = list.SelectedItems.Contains(dragItem) ? Selected() : new List<FileItem> { dragItem };
+            dragStart = null; dragItem = null; pendingSingle = null;
+            StartArchiveDrag(list, arcSel);
+            return;
+        }
         if (dragItem.IsRemote)
         {
             dragStart = null;
@@ -1364,7 +1388,7 @@ public partial class MainWindow : Window
         var hit = ItemFromSource(ActiveList, e.OriginalSource);
         over = null;
         if (hit != null && hit.IsDir && !files.Any(f => Same(f, hit.FullPath))) { over = hit; return hit.FullPath; }
-        return IsTag(current?.Path) ? null : current?.Path;
+        return IsTag(current?.Path) || Archives.IsArc(current?.Path) ? null : current?.Path;
     }
 
     void Content_DragOver(object sender, DragEventArgs e)
@@ -1568,6 +1592,7 @@ public partial class MainWindow : Window
     {
         if (((FrameworkElement)sender).Tag is not Crumb c || c.Path == null || IsTag(c.Path)) return;
         if (IsRemote(c.Path)) { ShowRemoteSubfolders((UIElement)sender, c.Path); return; }
+        if (Archives.IsArc(c.Path)) { ShowArchiveSubfolders((UIElement)sender, c.Path); return; }
         var menu = new ContextMenu { PlacementTarget = (UIElement)sender, Placement = PlacementMode.Bottom, MaxHeight = 520 };
         List<string> dirs;
         try
@@ -1751,6 +1776,7 @@ public partial class MainWindow : Window
     {
         var sel = Selected();
         if (sel.Count == 0) return;
+        if (sel.Any(f => f.InArchive)) { if (cut) Toast(ReadOnlyArchive); else CopyArchivedToClipboard(sel); return; }
         if (sel.Any(f => f.IsRemote))
         {
             if (cut) Toast("Cut isn't available for server files. Use Copy, then Delete.");
@@ -1781,6 +1807,7 @@ public partial class MainWindow : Window
     void Paste(string targetDir)
     {
         if (targetDir == null || IsTag(targetDir)) return;
+        if (Archives.IsArc(targetDir)) { Toast(ReadOnlyArchive); return; }
         string[] files = null;
         bool move = false;
         TryClipboard(() =>
@@ -1829,6 +1856,7 @@ public partial class MainWindow : Window
     void CreateNew(bool folder, string baseName = null, string ext = ".txt")
     {
         if (current == null || IsTag(current.Path)) return;
+        if (Archives.IsArc(current.Path)) { Toast(ReadOnlyArchive); return; }
         if (IsRemote(current.Path)) { CreateNewRemote(folder, baseName, ext); return; }
         string name = folder ? UniqueName(current.Path, baseName ?? "New folder", "") : UniqueName(current.Path, baseName ?? "New Text Document", ext);
         var p = IOPath.Combine(current.Path, name);
@@ -1907,6 +1935,7 @@ public partial class MainWindow : Window
             Toast("A name can't contain any of these characters:  \\ / : * ? \" < > |");
             return;
         }
+        if (f.InArchive) { Toast(ReadOnlyArchive); return; }
         if (f.IsRemote) { CommitRemoteRename(f, newName); return; }
         var dir = SafeParent(f.FullPath);
         if (dir == null) return;
@@ -1968,6 +1997,7 @@ public partial class MainWindow : Window
     {
         var sel = Selected();
         if (sel.Count == 0) return;
+        if (sel.Any(f => f.InArchive)) { Toast(ReadOnlyArchive); return; }
         if (sel.Any(f => f.IsRemote)) { DeleteRemote(sel); return; }
         if (permanent)
         {
@@ -2098,6 +2128,7 @@ public partial class MainWindow : Window
         var sel = Selected();
         var menu = new ContextMenu();
         bool tagView = IsTag(current.Path);
+        if (Archives.IsArc(current.Path)) { ShowArchiveMenu(list, anchor, sel); return; }
         if (IsRemote(current.Path)) { ShowRemoteMenu(list, anchor, sel); return; }
 
         if (sel.Count == 0)
@@ -2133,6 +2164,7 @@ public partial class MainWindow : Window
             menu.Items.Add(MI("Open", "", () => OpenItems(sel), "Enter"));
             if (allDirs) menu.Items.Add(MI(sel.Count == 1 ? "Open in new tab" : "Open in new tabs", "", () => OpenItems(sel, true)));
             if (sel.Count == 1 && !first.IsDir) menu.Items.Add(MI("Open with…", "", () => Shell.OpenWith(first.FullPath)));
+            AddArchiveItemsToMenu(menu, sel);
             if (tagView) menu.Items.Add(MI("Show in folder", "", () => Navigate(SafeParent(first.FullPath), first.FullPath)));
             menu.Items.Add(new Separator());
             menu.Items.Add(MI("Cut", "", () => CopyToClipboard(true), "Ctrl+X"));

@@ -81,7 +81,7 @@ public partial class PropertiesWindow : Window
         string parent = null;
         try
         {
-            var parents = items.Select(i => i.IsRemote ? Sftp.ParentOf(i.FullPath) : Path.GetDirectoryName(i.FullPath)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+            var parents = items.Select(i => i.InArchive ? Archives.ParentOf(i.FullPath) : i.IsRemote ? Sftp.ParentOf(i.FullPath) : Path.GetDirectoryName(i.FullPath)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
             parent = parents.Count == 1 ? parents[0] : "Several folders";
         }
         catch { }
@@ -112,7 +112,12 @@ public partial class PropertiesWindow : Window
             else
             {
                 AddRow("Modified", When(first.Modified));
-                AddRow("Server", Sftp.Parse(first.FullPath).Host);
+                if (first.InArchive)
+                {
+                    AddRow("Packed size", first.IsDir ? "—" : Bytes(first.Packed));
+                    AddRow("Archive", Archives.Parse(first.FullPath).archive);
+                }
+                else AddRow("Server", Sftp.Parse(first.FullPath).Host);
             }
         }
 
@@ -182,7 +187,7 @@ public partial class PropertiesWindow : Window
 
     static void CountRemote(string url, ref long bytes, ref long files, ref long folders, CancellationToken ct)
     {
-        foreach (var f in Sftp.List(url))
+        foreach (var f in Archives.IsArc(url) ? Archives.List(url) : Sftp.List(url))
         {
             ct.ThrowIfCancellationRequested();
             if (f.IsDir) { folders++; CountRemote(f.FullPath, ref bytes, ref files, ref folders, ct); }

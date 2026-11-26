@@ -29,5 +29,6 @@ SOFTWARE.
 
 ------------------------------------------------------------------------------
 SSH.NET (NuGet package SSH.NET) — MIT License — https://github.com/sshnet/SSH.NET
+SharpCompress (NuGet package SharpCompress) — MIT License — https://github.com/adamhathcock/sharpcompress
 SharpVectors (NuGet package SharpVectors.Wpf) — BSD 3-Clause License — https://github.com/ElinamLLC/SharpVectors
 Colour palettes: Catppuccin, Tokyo Night, Rosé Pine, Nord — MIT License

@@ -167,6 +167,20 @@ public sealed class FileItem : ObservableObject
         return f;
     }
 
+    /// <summary>True for items inside an archive (read-only, extracted on demand).</summary>
+    public bool InArchive { get; private set; }
+    public long Packed { get; private set; }
+    public bool Encrypted { get; private set; }
+
+    public static FileItem Archived(string url, string name, bool dir, long size, long packed, DateTime modified, bool encrypted)
+    {
+        var f = Remote(url, name, dir, size, modified);
+        f.InArchive = true;
+        f.Packed = packed;
+        f.Encrypted = encrypted;
+        return f;
+    }
+
     public static FileItem TryFromPath(string path)
     {
         try

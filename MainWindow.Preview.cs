@@ -157,7 +157,7 @@ public partial class MainWindow
 
             var ext = f.Ext;
             string local = f.FullPath;
-            if (f.IsRemote)
+            if (f.IsRemote && !f.InArchive)
             {
                 if (f.Size > MaxRemotePreview)
                 {
@@ -167,6 +167,12 @@ public partial class MainWindow
                 local = Sftp.TempPathFor(f.FullPath);
                 var url = f.FullPath;
                 await Task.Run(() => Sftp.Download(url, local), ct);
+                if (ct.IsCancellationRequested) return;
+            }
+            if (f.InArchive)
+            {
+                var url = f.FullPath;
+                local = (await Task.Run(() => Archives.ExtractToTemp(new[] { url }), ct)).FirstOrDefault() ?? local;
                 if (ct.IsCancellationRequested) return;
             }
             previewLocalPath = local;
@@ -412,6 +418,7 @@ public partial class MainWindow
         var path = f.FullPath;
         List<FileItem> children = await Task.Run(() =>
         {
+            if (f.InArchive) return Archives.List(path);
             if (f.IsRemote) return Sftp.List(path);
             var opts = new EnumerationOptions { IgnoreInaccessible = true, AttributesToSkip = 0 };
             var list = new List<FileItem>();

@@ -91,7 +91,7 @@ public partial class MainWindow
     List<FileItem> LoadChildrenSorted(string path)
     {
         List<FileItem> list;
-        try { list = IsRemote(path) ? Sftp.List(path) : Enumerate(path); }
+        try { list = Archives.IsArc(path) ? Archives.List(path) : IsRemote(path) ? Sftp.List(path) : Enumerate(path); }
         catch { return new List<FileItem>(); }
         bool hidden = S.ShowHidden;
         list = list.Where(f => hidden || !f.IsHidden).ToList();
