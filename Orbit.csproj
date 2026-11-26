@@ -3,6 +3,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <ApplicationIcon>Assets\orbit.ico</ApplicationIcon>
     <UseWPF>true</UseWPF>
     <Nullable>disable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
@@ -21,6 +22,7 @@
 
   <ItemGroup>
     <!-- Material Icon Theme (MIT) — https://github.com/material-extensions/vscode-material-icon-theme, via @iconify-json/material-icon-theme 1.2.77 -->
+    <Resource Include="Assets\orbit.ico" />
     <EmbeddedResource Include="Assets\material-icons.json" LogicalName="Orbit.material-icons.json" />
     <None Include="THIRD-PARTY-NOTICES.txt" CopyToOutputDirectory="PreserveNewest" />
     <!-- Icon packs: separate data files under their own licences (see Assets\icons\README.txt) -->
