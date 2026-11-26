@@ -15,9 +15,10 @@ A fast, modern file manager for Windows 10/11, built with WPF and .NET 10.
 - **Disk space map** — see what's filling a drive or folder as bubbles, drill in, and send the biggest items to the Recycle Bin
 - **Convert** — images to JPG, PNG, TIFF, BMP or GIF with live size estimates and resizing; video and audio to MP4, WebM, GIF, MP3, M4A, OGG or WAV when [ffmpeg](https://ffmpeg.org/download.html) is installed
 - **Locked folders** — turn a folder into a single password-protected `.orbitlock` file (AES-256-GCM, PBKDF2-SHA256 key with 600,000 iterations). Orbit never stores the password, and a forgotten password can't be recovered
+- **Recycle Bin** — browse it inside Orbit with original locations and deletion dates; restore, delete permanently, empty, or drop files on it
 - **Network** — SMB/Samba and WebDAV through Windows, SFTP over SSH, Google Drive / Dropbox / OneDrive / iCloud sync folders, and optional rclone mounts
-- **Themes** — Catppuccin Mocha, Tokyo Night, Rosé Pine, Nord and Catppuccin Latte, with an optional translucent (Mica) window
-- **Icon packs** — Windows icons or the Material Icon Theme
+- **Themes** — Catppuccin Mocha and Latte, Tokyo Night, Gruvbox Dark and Light, Everforest, Kanagawa, Rosé Pine, Nord, One Dark Pro, Monokai Pro, Solarized Dark and Light, Ayu Dark and Mirage, plus **System / Wallpaper**, which follows your pywal palette or Windows accent colour live. Optional translucent (Mica) window
+- **Icon packs** — Windows, Material, Papirus, Adwaita, Colloid, Candy, Phosphor (tinted to your theme) and Devicon, or point Orbit at any freedesktop.org icon theme folder
 - **Settings** — editable keyboard shortcuts, sidebar sections, and an update check
 
 ## Build
