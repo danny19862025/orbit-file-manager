@@ -5,7 +5,7 @@
 **A fast, modern file manager for Windows 10 and 11.**
 Tabs, four views, instant search, previews, archives, split panes, network drives, themes and icon packs — in one calm, keyboard-friendly window.
 
-[**⬇ Download the latest release**](https://github.com/danny19862025/orbit-file-manager/releases/latest) · [Report a bug](https://github.com/danny19862025/orbit-file-manager/issues) · [Buy me a coffee](https://buymeacoffee.com/danny1986)
+[**🌐 Visit the Orbit Website**](https://danny19862025.github.io/orbit-file-manager/) · [**⬇ Download the latest release**](https://github.com/danny19862025/orbit-file-manager/releases/latest) · [Report a bug](https://github.com/danny19862025/orbit-file-manager/issues) · [Buy me a coffee](https://buymeacoffee.com/danny1986)
 
 ![Orbit](docs/screenshots/main-grid.png)
 
