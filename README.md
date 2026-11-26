@@ -14,7 +14,7 @@ A fast, modern file manager for Windows 10/11, built with WPF and .NET 10.
 - **Drag and drop** — onto folders, tabs, the path bar and the sidebar; box-select; folders spring open while dragging; a Dropzone shelf
 - **Archives** — browse ZIP, RAR, 7z, TAR (and .tar.gz/.bz2/.xz) like folders; extract, compress to ZIP, drag files out; mount ISO/VHD images
 - **Split view** (Ctrl+\\) — a second pane for copying and moving between two folders; drop a tab on the right half to open it there
-- **Disk space map** — see what's filling a drive or folder as bubbles, drill in, and send the biggest items to the Recycle Bin
+- **Disk space map** — see what's filling a drive or folder as bubbles, drill in, and jump to any item in Orbit (it never deletes anything itself)
 - **Convert** — images to JPG, PNG, TIFF, BMP or GIF with live size estimates and resizing; video and audio to MP4, WebM, GIF, MP3, M4A, OGG or WAV when [ffmpeg](https://ffmpeg.org/download.html) is installed
 - **Locked folders** — turn a folder into a single password-protected `.orbitlock` file (AES-256-GCM, PBKDF2-SHA256 key with 600,000 iterations). Orbit never stores the password, and a forgotten password can't be recovered
 - **Recycle Bin** — browse it inside Orbit with original locations and deletion dates; restore, delete permanently, empty, or drop files on it

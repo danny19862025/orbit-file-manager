@@ -14,7 +14,8 @@ using IOPath = System.IO.Path;
 
 namespace Orbit;
 
-/// <summary>"Space, reclaimed": bubble map of what fills a folder or drive, with select-and-clean.</summary>
+/// <summary>"Where your space goes": a read-only bubble map of what fills a folder or drive. It never deletes anything —
+/// "Show in Orbit" takes you to the item so you can decide there.</summary>
 public partial class SpaceWindow : Window
 {
     sealed class Node
@@ -325,7 +326,10 @@ public partial class SpaceWindow : Window
             if (n.IsDir && !scanning) { root = n.Path; Scan(); }
             return;
         }
-        n.Selected = !n.Selected;
+        // one highlighted bubble at a time
+        bool was = n.Selected;
+        foreach (var o in nodes) o.Selected = false;
+        n.Selected = !was;
         Redraw();
         UpdateSelection();
     }
@@ -343,7 +347,6 @@ public partial class SpaceWindow : Window
         }
         if (n.IsDir) Add("Look inside", () => { root = n.Path; Scan(); });
         Add("Show in Orbit", () => { main.Activate(); main.ShowInOrbit(n.Path); });
-        Add(n.Selected ? "Deselect" : "Select for cleaning", () => { n.Selected = !n.Selected; Redraw(); UpdateSelection(); });
         menu.IsOpen = true;
     }
 
@@ -351,36 +354,37 @@ public partial class SpaceWindow : Window
     {
         var sel = nodes.Where(n => n.Selected).ToList();
         long size = sel.Sum(n => n.Size);
-        SelTitle.Text = sel.Count == 0 ? "Nothing selected" : $"{sel.Count} selected";
-        SelSub.Text = $"of {nodes.Count:N0} items" + (totalFiles > 0 ? $" · {totalFiles:N0} files" : "");
-        CleanText.Text = sel.Count == 0 ? "Clean" : $"Clean {Fmt.Size(size)}";
-        CleanBtn.IsEnabled = sel.Count > 0 && !scanning;
+        long all = nodes.Sum(n => n.Size);
+        if (sel.Count == 1)
+        {
+            SelTitle.Text = sel[0].Name;
+            SelSub.Text = Fmt.Size(size) + (all > 0 ? $" · {size * 100.0 / all:0.#}% of this folder" : "");
+        }
+        else
+        {
+            SelTitle.Text = "Click a bubble";
+            SelSub.Text = $"{nodes.Count:N0} items" + (totalFiles > 0 ? $" · {totalFiles:N0} files" : "");
+        }
+        SelTitle.MaxWidth = 260;
+        SelTitle.TextTrimming = TextTrimming.CharacterEllipsis;
+        ShowBtn.IsEnabled = sel.Count == 1 && !sel[0].IsOther;
 
         var bar = (FrameworkElement)DriveUsed.Parent;
         double w = bar.ActualWidth > 0 ? bar.ActualWidth : 384;
         if (driveTotal > 0)
         {
-            double usedW = Math.Max(0, (driveUsed - size) * w / driveTotal);
-            DriveUsed.Width = usedW;
-            DriveSelected.Margin = new Thickness(usedW, 0, 0, 0);
+            // the highlighted item's share of the drive, shown inside the used part of the bar
+            DriveUsed.Width = Math.Max(0, driveUsed * w / driveTotal);
+            DriveSelected.Margin = new Thickness(0);
             DriveSelected.Width = Math.Max(size > 0 ? 6 : 0, size * w / driveTotal);
         }
     }
 
-    void Clean_Click(object sender, RoutedEventArgs e)
+    void Show_Click(object sender, RoutedEventArgs e)
     {
-        var sel = nodes.Where(n => n.Selected).ToList();
-        if (sel.Count == 0) return;
-        long size = sel.Sum(n => n.Size);
-        var what = sel.Count == 1 ? $"“{sel[0].Name}”" : $"{sel.Count} items";
-        if (MessageBox.Show(this, $"Move {what} ({Fmt.Size(size)}) to the Recycle Bin?\n\nThe space is freed once you empty the Recycle Bin. Until then you can restore them.",
-                "Clean up", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) != MessageBoxResult.Yes) return;
-        var hwnd = new WindowInteropHelper(this).Handle;
-        CleanBtn.IsEnabled = false;
-        FileOps.Delete(sel.Select(n => n.Path), true, hwnd, () => Dispatcher.BeginInvoke(() =>
-        {
-            Scan();
-            main.ToastFromSpace($"Moved {what} to the Recycle Bin");
-        }));
+        var n = nodes.FirstOrDefault(x => x.Selected);
+        if (n == null || n.IsOther) return;
+        main.Activate();
+        main.ShowInOrbit(n.Path);
     }
 }

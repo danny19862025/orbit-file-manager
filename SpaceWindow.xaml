@@ -37,8 +37,8 @@
           <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
         <StackPanel VerticalAlignment="Center">
-          <TextBlock Text="Space, reclaimed" FontSize="26" FontWeight="SemiBold"/>
-          <TextBlock Text="See what fills a drive or folder. Select bubbles and clean them in one pass." Foreground="{DynamicResource MutedBrush}" FontSize="14" Margin="0,4,0,12"/>
+          <TextBlock Text="Where your space goes" FontSize="26" FontWeight="SemiBold"/>
+          <TextBlock Text="See what fills a drive or folder. Click a bubble to see what it is; double-click a folder to look inside." Foreground="{DynamicResource MutedBrush}" FontSize="14" Margin="0,4,0,12"/>
           <StackPanel Orientation="Horizontal">
             <Button x:Name="UpBtn" Style="{StaticResource IconButton}" Content="&#xE74A;" ToolTip="Up one level" Click="Up_Click"/>
             <TextBlock x:Name="PathText" VerticalAlignment="Center" Margin="8,0,0,0" FontSize="13.5" TextTrimming="CharacterEllipsis" MaxWidth="560"/>
@@ -79,11 +79,11 @@
               <TextBlock x:Name="SelTitle" Text="Nothing selected" FontWeight="SemiBold" FontSize="15"/>
               <TextBlock x:Name="SelSub" Foreground="{DynamicResource MutedBrush}" FontSize="12.5"/>
             </StackPanel>
-            <Button x:Name="CleanBtn" Style="{StaticResource DlgButton}" IsEnabled="False" Click="Clean_Click" Padding="22,11"
+            <Button x:Name="ShowBtn" Style="{StaticResource DlgButton}" IsEnabled="False" Click="Show_Click" Padding="22,11"
                     Background="{DynamicResource AccentBrush}" BorderBrush="{DynamicResource AccentBrush}" Foreground="{DynamicResource ContentBg}" FontWeight="SemiBold" FontSize="14">
               <StackPanel Orientation="Horizontal">
-                <TextBlock Text="&#xE74D;" FontFamily="{StaticResource IconFont}" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                <TextBlock x:Name="CleanText" Text="Clean"/>
+                <TextBlock Text="&#xE8A7;" FontFamily="{StaticResource IconFont}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                <TextBlock Text="Show in Orbit"/>
               </StackPanel>
             </Button>
           </StackPanel>
