@@ -3,108 +3,218 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using SharpVectors.Converters;
 using SharpVectors.Renderers.Wpf;
 
 namespace Orbit;
 
 /// <summary>
-/// Vector icon pack (Material Icon Theme, MIT) loaded from an embedded Iconify JSON file.
-/// Maps file names, extensions and folder names to icons, VS Code style.
+/// Vector icon packs. Every pack maps Orbit's logical icon names (folder-images, python, zip…) to SVG.
+/// Material is embedded; the others are files in "icons\" next to Orbit.exe, each with its own licence:
+/// Papirus, Adwaita, Colloid and Candy (freedesktop.org themes, see <see cref="Freedesktop"/>), Phosphor
+/// (tinted with the current theme's colours) and Devicon (language logos on top of Material).
+/// A custom freedesktop theme folder can be chosen too.
 /// </summary>
 public static class IconPack
 {
     public const string System = "system";
     public const string Material = "material";
+    public const string Custom = "custom";
 
-    public static readonly (string Id, string Name, string Description)[] All =
+    public sealed record Info(string Id, string Name, string Description, string File = null, string Fallback = null, bool Tint = false);
+
+    public static readonly Info[] All =
     {
-        (System, "Windows", "Your system's own icons and thumbnails"),
-        (Material, "Material", "Material Icon Theme — 1,100+ colourful file and folder icons"),
+        new(System, "Windows", "Your system's own icons and thumbnails"),
+        new(Material, "Material", "Material Icon Theme — 1,100+ colourful file and folder icons"),
+        new("papirus", "Papirus", "The popular Linux icon theme — flat, colourful folders and file types", "papirus.json"),
+        new("adwaita", "Adwaita", "GNOME's default icons — calm and simple", "adwaita.json"),
+        new("colloid", "Colloid", "Soft, rounded icons from the Colloid theme", "colloid.json"),
+        new("candy", "Candy", "Sweet gradient icons from candy-icons", "candy.json"),
+        new("phosphor", "Phosphor", "Clean duotone line icons that follow your theme's colours", "phosphor.json", Tint: true),
+        new("devicon", "Devicon", "Programming language and tool logos, with Material for everything else", "devicon.json", Fallback: Material),
+        new(Custom, "Freedesktop theme…", "Use any Linux icon theme folder (with index.theme), e.g. one from gnome-look.org"),
     };
 
+    public static Info Find(string id) => All.FirstOrDefault(p => p.Id == id);
+
+    sealed class Pack
+    {
+        public Dictionary<string, string> Icons = new(StringComparer.OrdinalIgnoreCase);
+        public string Error;
+    }
+
     static readonly object gate = new();
-    static Dictionary<string, (string Body, double W, double H)> icons;
+    static readonly ConcurrentDictionary<string, Pack> packs = new();
     static readonly ConcurrentDictionary<string, ImageSource> rendered = new();
 
-    public static bool IsActive => AppSettings.Current.IconPack == Material;
+    public static string ActiveId => AppSettings.Current.IconPack ?? Material;
+    public static bool IsActive => ActiveId != System;
+    /// <summary>True when icons are drawn in the theme's colours, so they must be redrawn when the theme changes.</summary>
+    public static bool Tinted => Find(ActiveId)?.Tint == true;
 
-    static void EnsureLoaded()
+    public static string IconsDir => Path.Combine(AppContext.BaseDirectory, "icons");
+
+    static Pack Get(string id) => packs.GetOrAdd(id ?? Material, Load);
+
+    static Pack Load(string id)
     {
-        if (icons != null) return;
-        lock (gate)
+        var pack = new Pack();
+        try
         {
-            if (icons != null) return;
-            var map = new Dictionary<string, (string, double, double)>(StringComparer.OrdinalIgnoreCase);
-            try
+            if (id == Material) LoadIconify(pack, typeof(IconPack).Assembly.GetManifestResourceStream("Orbit.material-icons.json")!);
+            else if (id == Custom)
             {
-                using var s = typeof(IconPack).Assembly.GetManifestResourceStream("Orbit.material-icons.json");
-                using var doc = JsonDocument.Parse(s!);
-                var root = doc.RootElement;
-                double dw = root.TryGetProperty("width", out var w0) ? w0.GetDouble() : 16;
-                double dh = root.TryGetProperty("height", out var h0) ? h0.GetDouble() : 16;
-                foreach (var p in root.GetProperty("icons").EnumerateObject())
-                {
-                    double w = p.Value.TryGetProperty("width", out var w1) ? w1.GetDouble() : dw;
-                    double h = p.Value.TryGetProperty("height", out var h1) ? h1.GetDouble() : dh;
-                    map[p.Name] = (p.Value.GetProperty("body").GetString(), w, h);
-                }
-                if (root.TryGetProperty("aliases", out var aliases))
-                    foreach (var a in aliases.EnumerateObject())
-                        if (a.Value.TryGetProperty("parent", out var parent) && map.TryGetValue(parent.GetString()!, out var target))
-                            map[a.Name] = target;
+                var dir = AppSettings.Current.CustomIconTheme;
+                if (string.IsNullOrEmpty(dir) || !Directory.Exists(dir)) throw new DirectoryNotFoundException("Choose an icon theme folder in Settings › Icons.");
+                pack.Icons = Freedesktop.Load(dir);
             }
-            catch (Exception ex) { AppSettings.LogError(ex); }
-            icons = map;
+            else if (Find(id)?.File is { } file)
+            {
+                using var fs = File.OpenRead(Path.Combine(IconsDir, file));
+                using var doc = JsonDocument.Parse(fs);
+                foreach (var p in doc.RootElement.GetProperty("icons").EnumerateObject()) pack.Icons[p.Name] = p.Value.GetString();
+            }
+        }
+        catch (Exception ex) { pack.Error = ex.Message; AppSettings.LogError(ex); }
+        return pack;
+    }
+
+    /// <summary>Iconify JSON (bodies without the outer &lt;svg&gt;) → full SVG documents.</summary>
+    static void LoadIconify(Pack pack, Stream s)
+    {
+        using (s)
+        using (var doc = JsonDocument.Parse(s))
+        {
+            var root = doc.RootElement;
+            double dw = root.TryGetProperty("width", out var w0) ? w0.GetDouble() : 16;
+            double dh = root.TryGetProperty("height", out var h0) ? h0.GetDouble() : 16;
+            foreach (var p in root.GetProperty("icons").EnumerateObject())
+            {
+                double w = p.Value.TryGetProperty("width", out var w1) ? w1.GetDouble() : dw;
+                double h = p.Value.TryGetProperty("height", out var h1) ? h1.GetDouble() : dh;
+                pack.Icons[p.Name] = Wrap(p.Value.GetProperty("body").GetString(), w, h);
+            }
+            if (root.TryGetProperty("aliases", out var aliases))
+                foreach (var a in aliases.EnumerateObject())
+                    if (a.Value.TryGetProperty("parent", out var parent) && pack.Icons.TryGetValue(parent.GetString()!, out var target))
+                        pack.Icons[a.Name] = target;
         }
     }
 
-    public static bool Has(string name)
+    public static string Wrap(string body, double w, double h)
     {
-        EnsureLoaded();
-        return icons.ContainsKey(name);
+        string W = w.ToString(CultureInfo.InvariantCulture), H = h.ToString(CultureInfo.InvariantCulture);
+        return $"<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" width=\"{W}\" height=\"{H}\" viewBox=\"0 0 {W} {H}\">{body}</svg>";
     }
 
-    /// <summary>Renders an icon to a frozen vector image (safe to use from any thread).</summary>
-    public static ImageSource Render(string name)
+    /// <summary>Why a pack couldn't load (missing files, bad theme folder), or null.</summary>
+    public static string ErrorFor(string id) => Get(id).Error;
+
+    /// <summary>Forget a loaded pack (after choosing a different custom theme folder).</summary>
+    public static void Unload(string id) { packs.TryRemove(id, out _); rendered.Clear(); }
+
+    static bool HasIn(string packId, string name)
     {
-        if (rendered.TryGetValue(name, out var img)) return img;
-        EnsureLoaded();
-        if (!icons.TryGetValue(name, out var icon)) return null;
+        if (Get(packId).Icons.ContainsKey(name)) return true;
+        return Find(packId)?.Fallback is { } fb && Get(fb).Icons.ContainsKey(name);
+    }
+
+    public static bool Has(string name) => HasIn(ActiveId, name);
+
+    /// <summary>Renders an icon from the active pack to a frozen image (safe to use from any thread).</summary>
+    public static ImageSource Render(string name) => RenderFrom(ActiveId, name);
+
+    public static ImageSource RenderFrom(string packId, string name)
+    {
+        if (name == null) return null;
+        var info = Find(packId);
+        bool folder = name.StartsWith("folder", StringComparison.OrdinalIgnoreCase);
+        string tint = info?.Tint == true ? (folder ? Themes.Current?.Accent : Themes.Current?.Text) ?? "#CDD6F4" : null;
+        var key = $"{packId}|{name}|{tint}";
+        if (rendered.TryGetValue(key, out var img)) return img;
+        if (!Get(packId).Icons.TryGetValue(name, out var data))
+        {
+            if (info?.Fallback is { } fb && Get(fb).Icons.TryGetValue(name, out var fbData)) data = fbData;
+            else return null;
+        }
         try
         {
-            var svg = $"<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" " +
-                      $"width=\"{icon.W.ToString(CultureInfo.InvariantCulture)}\" height=\"{icon.H.ToString(CultureInfo.InvariantCulture)}\" viewBox=\"0 0 {icon.W.ToString(CultureInfo.InvariantCulture)} {icon.H.ToString(CultureInfo.InvariantCulture)}\">{icon.Body}</svg>";
-            DrawingGroup drawing;
-            lock (gate) // the SVG reader isn't documented as thread-safe
-            {
-                var reader = new FileSvgReader(new WpfDrawingSettings { IncludeRuntime = false, TextAsGeometry = true, CultureInfo = CultureInfo.InvariantCulture });
-                using var ms = new MemoryStream(Encoding.UTF8.GetBytes(svg));
-                drawing = reader.Read(ms);
-            }
-            if (drawing == null) return null;
-            // Pad to the full viewBox so every icon keeps the same visual size and position.
-            var framed = new DrawingGroup();
-            framed.Children.Add(new GeometryDrawing(Brushes.Transparent, null, new RectangleGeometry(new global::System.Windows.Rect(0, 0, icon.W, icon.H))));
-            framed.Children.Add(drawing);
-            framed.ClipGeometry = new RectangleGeometry(new global::System.Windows.Rect(0, 0, icon.W, icon.H));
-            var image = new DrawingImage(framed);
+            var image = data.StartsWith("data:image/png;base64,", StringComparison.Ordinal) ? Png(data) : Svg(data, tint);
+            if (image == null) return Generic(packId, key, name, folder);
             image.Freeze();
-            rendered[name] = image;
+            rendered[key] = image;
             return image;
         }
         catch (Exception ex)
         {
             AppSettings.LogError(ex);
-            return null;
+            return Generic(packId, key, name, folder);
         }
     }
 
-    public static void ClearCache() => rendered.Clear();
+    /// <summary>A pack's plain folder / document icon, used when a specific icon can't be drawn.</summary>
+    static ImageSource Generic(string packId, string key, string name, bool folder)
+    {
+        var generic = folder ? "folder-base" : "document";
+        var img = name.Equals(generic, StringComparison.OrdinalIgnoreCase) ? null : RenderFrom(packId, generic);
+        if (img != null) rendered[key] = img;
+        return img;
+    }
 
+    static ImageSource Png(string data)
+    {
+        var bmp = new BitmapImage();
+        bmp.BeginInit();
+        bmp.CacheOption = BitmapCacheOption.OnLoad;
+        bmp.StreamSource = new MemoryStream(Convert.FromBase64String(data[22..]));
+        bmp.EndInit();
+        return bmp;
+    }
+
+    static ImageSource Svg(string svg, string tint)
+    {
+        if (tint != null) svg = svg.Replace("currentColor", tint);
+        DrawingGroup drawing;
+        lock (gate) // the SVG reader isn't documented as thread-safe
+        {
+            var reader = new FileSvgReader(new WpfDrawingSettings { IncludeRuntime = false, TextAsGeometry = true, CultureInfo = CultureInfo.InvariantCulture });
+            using var ms = new MemoryStream(Encoding.UTF8.GetBytes(svg));
+            drawing = reader.Read(ms);
+        }
+        if (drawing == null || drawing.Bounds.IsEmpty || drawing.Bounds.Width < 0.01) return null;
+        // Pad to the full viewBox so every icon keeps the same visual size and position.
+        var (w, h) = ViewBox(svg, drawing);
+        var framed = new DrawingGroup();
+        framed.Children.Add(new GeometryDrawing(Brushes.Transparent, null, new RectangleGeometry(new global::System.Windows.Rect(0, 0, w, h))));
+        framed.Children.Add(drawing);
+        framed.ClipGeometry = new RectangleGeometry(new global::System.Windows.Rect(0, 0, w, h));
+        return new DrawingImage(framed);
+    }
+
+    static (double, double) ViewBox(string svg, DrawingGroup drawing)
+    {
+        // The SVG reader draws at the width/height size when they're given (scaling the viewBox to fit), so frame to those first.
+        var root = global::System.Text.RegularExpressions.Regex.Match(svg, @"<svg\b[^>]*>").Value;
+        var mw = global::System.Text.RegularExpressions.Regex.Match(root, @"\swidth\s*=\s*[""']\s*([\d.]+)\s*(px|pt)?\s*[""']");
+        var mh = global::System.Text.RegularExpressions.Regex.Match(root, @"\sheight\s*=\s*[""']\s*([\d.]+)\s*(px|pt)?\s*[""']");
+        if (mw.Success && mh.Success && double.TryParse(mw.Groups[1].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var aw)
+            && double.TryParse(mh.Groups[1].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var ah) && aw > 0 && ah > 0)
+            return mw.Groups[2].Value == "pt" ? (aw * 4 / 3, ah * 4 / 3) : (aw, ah);
+        var m =global::System.Text.RegularExpressions.Regex.Match(svg, @"<svg[^>]*?viewBox\s*=\s*[""']\s*[-\d.]+[\s,]+[-\d.]+[\s,]+([\d.]+)[\s,]+([\d.]+)");
+        if (m.Success && double.TryParse(m.Groups[1].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var w)
+                      && double.TryParse(m.Groups[2].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var h) && w > 0 && h > 0)
+            return (w, h);
+        var b = drawing.Bounds;
+        return (Math.Max(1, b.Right), Math.Max(1, b.Bottom));
+    }
+
+    public static void ClearCache() => rendered.Clear();
     // ---------------------------------------------------------------------
     // Mapping
     // ---------------------------------------------------------------------
@@ -191,7 +301,6 @@ public static class IconPack
     /// <summary>Icon name for an item, or null to fall back to the system icon.</summary>
     public static string Resolve(string name, bool isDir)
     {
-        EnsureLoaded();
         if (isDir)
         {
             if (FolderNames.TryGetValue(name, out var f) && Has(f)) return f;
@@ -201,8 +310,8 @@ public static class IconPack
         }
         if (FileNames.TryGetValue(name, out var byName) && Has(byName)) return byName;
         var lower = name.ToLowerInvariant();
-        if (lower.EndsWith(".d.ts")) return "typescript-def";
-        if (lower.StartsWith("dockerfile")) return "docker";
+        if (lower.EndsWith(".d.ts") && Has("typescript-def")) return "typescript-def";
+        if (lower.StartsWith("dockerfile") && Has("docker")) return "docker";
         int dot = lower.LastIndexOf('.');
         if (dot >= 0 && dot < lower.Length - 1)
         {

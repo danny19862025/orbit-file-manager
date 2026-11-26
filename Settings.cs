@@ -39,6 +39,7 @@ public sealed class AppSettings
     public List<string> HiddenSections { get; set; } = new();
     public Dictionary<string, string> Keymap { get; set; } = new();
     public string IconPack { get; set; } = Orbit.IconPack.Material;
+    public string CustomIconTheme { get; set; }
     public bool PackThumbnails { get; set; } = true;
     public List<ServerEntry> Servers { get; set; } = new();
     /// <summary>SSH host keys the user has accepted: "[host]:port" → "type SHA256:fingerprint".</summary>
@@ -72,7 +73,7 @@ public sealed class AppSettings
         Keymap ??= new();
         Servers.RemoveAll(s => s == null || string.IsNullOrWhiteSpace(s.Host));
         Theme = Orbit.Themes.Find(Theme).Name;
-        if (IconPack != Orbit.IconPack.System && IconPack != Orbit.IconPack.Material) IconPack = Orbit.IconPack.Material;
+        if (Orbit.IconPack.Find(IconPack) == null) IconPack = Orbit.IconPack.Material;
         var tags = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
         if (Tags != null)
             foreach (var kv in Tags)

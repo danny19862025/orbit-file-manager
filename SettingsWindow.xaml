@@ -188,7 +188,7 @@
             <!-- Icons -->
             <StackPanel x:Name="PageIcons" Visibility="Collapsed">
               <TextBlock Style="{StaticResource H1}" Text="Icons"/>
-              <TextBlock Style="{StaticResource Sub}" Text="Choose how files and folders look. More icon packs will be added here."/>
+              <TextBlock Style="{StaticResource Sub}" Text="Choose how files and folders look. Linux packs can also come from any freedesktop icon theme folder."/>
               <TextBlock Style="{StaticResource H2}" Text="Icon pack"/>
               <WrapPanel x:Name="IconCards"/>
               <TextBlock Style="{StaticResource H2}" Text="Previews"/>

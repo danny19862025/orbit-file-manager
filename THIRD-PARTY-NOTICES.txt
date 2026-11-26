@@ -32,3 +32,10 @@ SSH.NET (NuGet package SSH.NET) — MIT License — https://github.com/sshnet/SS
 SharpCompress (NuGet package SharpCompress) — MIT License — https://github.com/adamhathcock/sharpcompress
 SharpVectors (NuGet package SharpVectors.Wpf) — BSD 3-Clause License — https://github.com/ElinamLLC/SharpVectors
 Colour palettes: Catppuccin, Tokyo Night, Rosé Pine, Nord — MIT License
+
+------------------------------------------------------------------------------
+Icon packs (files in the "icons" folder next to Orbit.exe)
+
+Papirus, Colloid and candy-icons are licensed under the GNU GPL v3; Adwaita under LGPL v3 / CC BY-SA 3.0;
+Phosphor Icons and Devicon under the MIT License. They are separate data files read at run time and keep their
+own licences. Full texts are in icons\licenses, and sources are listed in icons\README.txt.

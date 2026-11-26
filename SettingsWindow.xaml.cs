@@ -145,20 +145,28 @@ public partial class SettingsWindow : Window
     void BuildIconCards()
     {
         IconCards.Children.Clear();
-        var samples = new[] { ("folder-base", true), ("folder-images", true), ("folder-src", true), ("javascript", false),
-                              ("python", false), ("pdf", false), ("zip", false) };
-        foreach (var (id, name, description) in IconPack.All)
+        var samples = new[] { "folder-base", "folder-images", "folder-download", "javascript", "python", "pdf", "zip" };
+        foreach (var pack in IconPack.All)
         {
+            var id = pack.Id;
             bool selected = S.IconPack == id;
+            bool customUnset = id == IconPack.Custom && string.IsNullOrEmpty(S.CustomIconTheme);
+            string problem = id == IconPack.System || customUnset ? null : IconPack.ErrorFor(id);
             var row = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 2, 0, 10), Height = 30, ClipToBounds = true };
-            if (id == IconPack.Material)
+            if (id != IconPack.System && !customUnset && problem == null)
             {
-                foreach (var (icon, _) in samples)
-                    row.Children.Add(new Image { Source = IconPack.Render(icon), Width = 24, Height = 24, Margin = new Thickness(0, 0, 6, 0) });
+                foreach (var icon in samples)
+                {
+                    var src = IconPack.RenderFrom(id, icon) ?? IconPack.RenderFrom(id, icon.StartsWith("folder") ? "folder-base" : "document");
+                    row.Children.Add(new Image { Source = src, Width = 24, Height = 24, Margin = new Thickness(0, 0, 5, 0) });
+                }
             }
             else
             {
-                foreach (var glyph in new[] { "", "", "", "", "", "", "", "" }.Take(7))
+                var glyphs = id == IconPack.System
+                    ? new[] { "\uE8B7", "\uE8B7", "\uE8B7", "\uE8A5", "\uE8A5", "\uE8A5", "\uE8A5" }
+                    : new[] { "\uE8DA" };
+                foreach (var glyph in glyphs)
                 {
                     var t = new TextBlock { Text = glyph, FontFamily = (FontFamily)FindResource("IconFont"), FontSize = 20, Margin = new Thickness(0, 0, 8, 0), Foreground = new SolidColorBrush(Color.FromRgb(0xF9, 0xD8, 0x6B)) };
                     row.Children.Add(t);
@@ -169,31 +177,51 @@ public partial class SettingsWindow : Window
             var nameRow = new DockPanel();
             if (selected)
             {
-                var tick = new TextBlock { Text = "", FontFamily = (FontFamily)FindResource("IconFont"), FontSize = 12, VerticalAlignment = VerticalAlignment.Center };
+                var tick = new TextBlock { Text = "\uE73E", FontFamily = (FontFamily)FindResource("IconFont"), FontSize = 12, VerticalAlignment = VerticalAlignment.Center };
                 tick.SetResourceReference(TextBlock.ForegroundProperty, "AccentBrush");
                 DockPanel.SetDock(tick, Dock.Right);
                 nameRow.Children.Add(tick);
             }
-            nameRow.Children.Add(new TextBlock { Text = name, FontWeight = FontWeights.SemiBold });
+            var title = id == IconPack.Custom && !customUnset ? "Freedesktop: " + System.IO.Path.GetFileName(S.CustomIconTheme.TrimEnd('\\')) : pack.Name;
+            nameRow.Children.Add(new TextBlock { Text = title, FontWeight = FontWeights.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis });
             stack.Children.Add(nameRow);
-            var desc = new TextBlock { Text = description, FontSize = 12, TextWrapping = TextWrapping.Wrap };
+            var text = problem != null ? (id == IconPack.Custom ? problem : "Not installed — its icon file is missing from the icons folder.")
+                     : id == IconPack.Custom && !customUnset ? "Click to choose a different theme folder" : pack.Description;
+            var desc = new TextBlock { Text = text, FontSize = 12, TextWrapping = TextWrapping.Wrap };
             desc.SetResourceReference(TextBlock.ForegroundProperty, "MutedBrush");
             stack.Children.Add(desc);
 
             var card = new Border
             {
-                Width = 270, Margin = new Thickness(0, 0, 12, 12), Padding = new Thickness(12), CornerRadius = new CornerRadius(11),
-                BorderThickness = new Thickness(selected ? 2 : 1), Cursor = Cursors.Hand, Child = stack, Tag = id
+                Width = 240, Margin = new Thickness(0, 0, 10, 10), Padding = new Thickness(12), CornerRadius = new CornerRadius(11),
+                BorderThickness = new Thickness(selected ? 2 : 1), Cursor = Cursors.Hand, Child = stack, Tag = id,
+                Opacity = problem != null && id != IconPack.Custom ? 0.55 : 1
             };
             card.SetResourceReference(Border.BackgroundProperty, "PanelBg");
             card.SetResourceReference(Border.BorderBrushProperty, selected ? "AccentBrush" : "LineBrush");
             card.MouseLeftButtonUp += (s, _) =>
             {
-                main.SetIconPack((string)((FrameworkElement)s).Tag);
+                var tag = (string)((FrameworkElement)s).Tag;
+                if (tag == IconPack.Custom) ChooseIconTheme();
+                else if (tag == IconPack.System || IconPack.ErrorFor(tag) == null) main.SetIconPack(tag);
                 BuildIconCards();
             };
             IconCards.Children.Add(card);
         }
+    }
+
+    void ChooseIconTheme()
+    {
+        var dlg = new Microsoft.Win32.OpenFolderDialog
+        {
+            Title = "Choose an icon theme folder (the one with index.theme)",
+            InitialDirectory = string.IsNullOrEmpty(S.CustomIconTheme) ? null : S.CustomIconTheme
+        };
+        if (dlg.ShowDialog(this) != true) return;
+        Cursor = Cursors.Wait;
+        var err = main.SetCustomIconTheme(dlg.FolderName);
+        Cursor = null;
+        if (err != null) MessageBox.Show(this, err, "Icon theme", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     void Thumb_Click(object sender, RoutedEventArgs e) => main.SetPackThumbnails(ThumbCheck.IsChecked == true);

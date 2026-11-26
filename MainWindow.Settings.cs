@@ -60,6 +60,23 @@ public partial class MainWindow
         SaveSoon();
     }
 
+    /// <summary>Use a freedesktop icon theme folder. Returns an error message, or null when it worked.</summary>
+    internal string SetCustomIconTheme(string dir)
+    {
+        var old = S.CustomIconTheme;
+        S.CustomIconTheme = dir;
+        IconPack.Unload(IconPack.Custom);
+        if (IconPack.ErrorFor(IconPack.Custom) is { } err)
+        {
+            S.CustomIconTheme = old;
+            IconPack.Unload(IconPack.Custom);
+            return err;
+        }
+        S.IconPack = IconPack.Custom;
+        RefreshIcons();
+        return null;
+    }
+
     internal void OpenConnectDialog() => ShowConnectDialog(null);
     internal void RedetectNetwork() { RebuildNetwork(); Toast("Cloud folders refreshed"); }
     internal void SaveSettingsSoon() => SaveSoon();
