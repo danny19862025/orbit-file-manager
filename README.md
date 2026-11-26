@@ -5,7 +5,7 @@
 **A fast, modern file manager for Windows 10 and 11 — and Linux.**
 Tabs, four views, instant search, previews, archives, split panes, network drives, themes and icon packs — in one calm, keyboard-friendly window.
 
-[**🌐 Visit the Orbit Website**](https://danny19862025.github.io/orbit-file-manager/) · [**⬇ Download the latest release**](https://github.com/danny19862025/orbit-file-manager/releases/latest) · [Report a bug](https://github.com/danny19862025/orbit-file-manager/issues) · [Buy me a coffee](https://buymeacoffee.com/danny1986)
+[**🌐 Visit the Orbit Website**](https://danny19862025.github.io/orbit-file-manager/) · **⬇ Download:** [**Windows**](https://github.com/danny19862025/orbit-file-manager/releases/latest/download/OrbitSetup-1.0.0.exe) · [**Linux**](https://github.com/danny19862025/orbit-file-manager/releases/latest/download/Orbit-1.0.0-linux-x64.tar.gz) · [all releases](https://github.com/danny19862025/orbit-file-manager/releases/latest) · [Report a bug](https://github.com/danny19862025/orbit-file-manager/issues) · [Buy me a coffee](https://buymeacoffee.com/danny1986)
 
 ![Orbit](docs/screenshots/main-grid.png)
 
@@ -13,7 +13,7 @@ Tabs, four views, instant search, previews, archives, split panes, network drive
 
 ## Contents
 
-- [Install](#install) · [Update](#update) · [Uninstall](#uninstall)
+- [Install](#install) · [Linux](#linux) · [Update](#update) · [Uninstall](#uninstall)
 - [The main window](#the-main-window) — sidebar, tabs, path bar, command bar, status bar
 - [Views](#views) — Grid, Details, Columns, Tree
 - [Working with files](#working-with-files) — open, create, copy, move, rename, delete, drag and drop, tags, Properties
@@ -56,9 +56,28 @@ Silent install (for scripts): `OrbitSetup-<version>.exe /quiet` — add `/dir="D
 
 ### Linux
 
-Orbit runs on Linux too (KDE Plasma, GNOME and others, x64 or arm64) — the same app with Linux doing the jobs Windows' shell does:
-the freedesktop Trash, mounted drives with Eject, GVfs for SMB / WebDAV, your desktop's icon theme, mpv for media previews.
-Download the `linux-x64` tarball, then `./install.sh` (no root needed). Details and what's different: **[Orbit for Linux](linux/README.md)**.
+![Orbit on Linux](docs/screenshots/linux-grid.png)
+
+Orbit runs on Linux too — KDE Plasma, GNOME and other desktops, 64-bit (x64). It's the same app: the same window, views,
+menus, shortcuts, themes, icon packs and tools, with Linux doing the jobs Windows' shell does — your desktop's **Trash**,
+mounted **drives** with Eject, **GVfs** for SMB / WebDAV shares, your **icon theme** and thumbnails, **mpv** for video
+and music previews.
+
+**[⬇ Download Orbit for Linux](https://github.com/danny19862025/orbit-file-manager/releases/latest/download/Orbit-1.0.0-linux-x64.tar.gz)**, then:
+
+```sh
+tar xf Orbit-1.0.0-linux-x64.tar.gz
+cd Orbit-1.0.0-linux-x64
+./install.sh              # for your account only — no root needed
+./install.sh --default    # optional: make Orbit your default app for folders
+```
+
+Orbit then appears in your app menu, and `orbit` starts it from a terminal. Everything it needs is in the download
+(no .NET to install); `./uninstall.sh` removes it. Optional helpers such as `mpv`, `ffmpeg`, `gvfs-smb` and `udisks2`
+switch on media previews, conversion, network shares and eject — most desktops already have them.
+Settings live in `~/.config/Orbit` (same format as on Windows), and locked folders open on either system.
+
+Full details, the list of helpers and everything that works differently: **[Orbit for Linux](linux/README.md)**.
 
 ## Update
 
