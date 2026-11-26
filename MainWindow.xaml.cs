@@ -149,6 +149,7 @@ public partial class MainWindow : Window
         SwitchTo(startTab);
         RestoreSplit();
         if (PendingSpacePath != null) { var sp = PendingSpacePath; PendingSpacePath = null; Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () => OpenSpace(sp)); }
+        if (PendingConvertPath != null) { var cp = PendingConvertPath; PendingConvertPath = null; Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () => OpenConvertPaths(new List<string> { cp })); }
         _ = Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, () => SearchService.Start());
         FitTabs();
     }

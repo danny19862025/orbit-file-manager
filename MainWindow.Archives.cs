@@ -241,6 +241,7 @@ public partial class MainWindow
         if (localFiles.Count == 1 && Archives.IsIso(localFiles[0].FullPath))
             menu.Items.Add(MI("Mount", "", () => MountIso(localFiles[0].FullPath)));
         menu.Items.Add(MI("Compress to ZIP", "", () => CompressSelection(localFiles)));
+        AddFileToolItems(menu, localFiles);
     }
 
     void ShowArchiveMenu(ListBox list, UIElement anchor, List<FileItem> sel)

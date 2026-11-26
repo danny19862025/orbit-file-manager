@@ -30,6 +30,7 @@ public partial class App : Application
         {
             if (e.Args[i] == "--preview" && i + 1 < e.Args.Length) preview = e.Args[++i];
             else if (e.Args[i] == "--space" && i + 1 < e.Args.Length) Orbit.MainWindow.PendingSpacePath = e.Args[++i];
+            else if (e.Args[i] == "--convert" && i + 1 < e.Args.Length) Orbit.MainWindow.PendingConvertPath = e.Args[++i];
             else start ??= e.Args[i];
         }
         var w = new Orbit.MainWindow(preview ?? start, preview);
