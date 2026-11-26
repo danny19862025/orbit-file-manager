@@ -268,6 +268,7 @@ public partial class MainWindow
         menu.Items.Add(new Separator());
         menu.Items.Add(MI("Open in Terminal", "", () => Shell.OpenTerminal(current.Path), null, local));
         menu.Items.Add(MI("Open in File Explorer", "", () => Shell.OpenInExplorer(current.Path), null, local));
+        AddToolItems(menu);
         menu.Items.Add(MI("Properties", "", ShowProperties, "Alt+Enter", local || Selected().Any(f => !f.IsRemote)));
         menu.Items.Add(new Separator());
         menu.Items.Add(MI("Settings", "", () => OpenSettings(null), "Ctrl+,"));

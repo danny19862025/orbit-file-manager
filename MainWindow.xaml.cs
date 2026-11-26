@@ -148,6 +148,7 @@ public partial class MainWindow : Window
         IconService.Scale = VisualTreeHelper.GetDpi(this).DpiScaleX;
         SwitchTo(startTab);
         RestoreSplit();
+        if (PendingSpacePath != null) { var sp = PendingSpacePath; PendingSpacePath = null; Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () => OpenSpace(sp)); }
         _ = Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, () => SearchService.Start());
         FitTabs();
     }
@@ -573,6 +574,7 @@ public partial class MainWindow : Window
         {
             menu.Items.Add(MI("Open", "", () => OpenSide(s, false)));
             menu.Items.Add(MI("Open in new tab", "", () => OpenSide(s, true)));
+            AddDriveMenuItems(menu, s);
             if (!IsTag(s.Path))
             {
                 menu.Items.Add(new Separator());
