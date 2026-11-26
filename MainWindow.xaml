@@ -466,15 +466,8 @@
           <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" Content="&#xE713;" FontSize="14" Margin="0,0,2,0"
                   ToolTip="Settings (Ctrl+,)" Click="Settings_Click" WindowChrome.IsHitTestVisibleInChrome="True"/>
           <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-            <Grid Width="20" Height="20" Margin="0,0,10,0">
-              <Border x:Name="TitleLogo" CornerRadius="6" Background="{DynamicResource AccentBrush}" RenderTransformOrigin="0.5,0.5">
-                <Ellipse Width="8" Height="8" Fill="{DynamicResource SidebarBg}"/>
-              </Border>
-              <!-- a little moon that sweeps once around the mark when Orbit opens -->
-              <Canvas x:Name="TitleMoon" Width="20" Height="20" RenderTransformOrigin="0.5,0.5" IsHitTestVisible="False" Opacity="0">
-                <Ellipse Canvas.Left="7" Canvas.Top="-6" Width="6" Height="6" Fill="{DynamicResource SelBorderBrush}"/>
-              </Canvas>
-            </Grid>
+            <!-- the app icon, drawn live so its moon can travel round the ring once when Orbit opens (MainWindow.Intro.cs) -->
+            <Canvas x:Name="TitleIcon" Width="26" Height="26" Margin="0,0,10,0" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5"/>
             <TextBlock Text="Orbit" FontWeight="SemiBold" FontSize="15.5" VerticalAlignment="Center"/>
           </StackPanel>
         </DockPanel>
