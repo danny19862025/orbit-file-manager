@@ -1,3 +1,5 @@
+<img src="Assets/orbit-256.png" width="96" alt="Orbit icon" align="right">
+
 # Orbit
 
 A fast, modern file manager for Windows 10/11, built with WPF and .NET 10.
