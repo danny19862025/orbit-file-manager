@@ -54,7 +54,7 @@ public sealed class SettingsWindow : OrbitWindow
         RadioButton Nav(string glyph, string text)
         {
             var r = new RadioButton { Classes = { "nav" }, Tag = glyph, Content = text, GroupName = "nav" };
-            r.IsCheckedChanged += (_, _) => { if (r.IsChecked == true) ShowPage(); };
+            r.IsCheckedChanged += (_, _) => { if (r.IsChecked == true) ShowPage(r); };
             nav.Children.Add(r);
             return r;
         }
@@ -111,15 +111,19 @@ public sealed class SettingsWindow : OrbitWindow
 
     void OnThemeChanged() => Dispatcher.UIThread.Post(BuildThemeCards);
 
-    void ShowPage()
+    /// <summary>Shows the page of the nav item that was just checked. (The previous item is still checked at this
+    /// moment — the radio group unchecks it afterwards — so pages are chosen from the new item, not from every item's state.)</summary>
+    void ShowPage(RadioButton selected)
     {
-        pageAppearance.IsVisible = navAppearance?.IsChecked == true;
-        pageIcons.IsVisible = navIcons?.IsChecked == true;
-        pageGeneral.IsVisible = navGeneral?.IsChecked == true;
-        pageNetwork.IsVisible = navNetwork?.IsChecked == true;
-        pageShortcuts.IsVisible = navShortcuts?.IsChecked == true;
-        pageAbout.IsVisible = navAbout?.IsChecked == true;
-        if (navNetwork?.IsChecked == true) BuildKnownHosts();
+        pageAppearance.IsVisible = ReferenceEquals(selected, navAppearance);
+        pageIcons.IsVisible = ReferenceEquals(selected, navIcons);
+        pageGeneral.IsVisible = ReferenceEquals(selected, navGeneral);
+        pageNetwork.IsVisible = ReferenceEquals(selected, navNetwork);
+        pageShortcuts.IsVisible = ReferenceEquals(selected, navShortcuts);
+        pageAbout.IsVisible = ReferenceEquals(selected, navAbout);
+        foreach (var n in new[] { navAppearance, navIcons, navGeneral, navNetwork, navShortcuts, navAbout })
+            if (n != null && !ReferenceEquals(n, selected)) n.IsChecked = false;
+        if (ReferenceEquals(selected, navNetwork)) BuildKnownHosts();
         if (pageScroll != null) pageScroll.Offset = new Vector(0, 0);
     }
 

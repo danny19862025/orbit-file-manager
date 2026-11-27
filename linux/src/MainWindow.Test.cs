@@ -10,6 +10,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 
 namespace Orbit;
 
@@ -98,6 +99,11 @@ public partial class MainWindow
                         foreach (var w in OwnedOrOpenWindows()) w.Close();
                         break;
                     case "toast": Toast(arg); break;
+                    case "settab":
+                        var sw = OwnedOrOpenWindows().OfType<SettingsWindow>().FirstOrDefault();
+                        var rb = sw?.GetVisualDescendants().OfType<RadioButton>().FirstOrDefault(x => (x.Content as string) == arg);
+                        if (rb != null) rb.IsChecked = true; else Log("  no tab " + arg);
+                        break;
                     case "renameto":
                         BeginRenameSelected();
                         if (Selected().FirstOrDefault() is { } rf) { rf.EditName = arg; CommitRename(rf); }
