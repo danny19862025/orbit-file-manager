@@ -13,7 +13,7 @@ Tabs, four views, instant search, previews, archives, split panes, network drive
 
 ## Contents
 
-- [Install](#install) · [Linux](#linux) · [Update](#update) · [Uninstall](#uninstall)
+- [Install](#install) — [Windows](#windows--step-by-step) · [Linux](#linux) · [Update](#update) · [Uninstall](#uninstall) · [Installation problems](#installation-problems)
 - [The main window](#the-main-window) — sidebar, tabs, path bar, command bar, status bar
 - [Views](#views) — Grid, Details, Columns, Tree
 - [Working with files](#working-with-files) — open, create, copy, move, rename, delete, drag and drop, tags, Properties
@@ -29,63 +29,160 @@ Tabs, four views, instant search, previews, archives, split panes, network drive
 
 ## Install
 
-Download from the [Releases page](https://github.com/danny19862025/orbit-file-manager/releases/latest):
+Orbit is free. Every download contains everything Orbit needs — you **don't** have to install .NET or anything else first.
 
-| File | What it is |
-|---|---|
-| **`OrbitSetup-<version>.exe`** | The installer — recommended. |
-| `Orbit-<version>-win-x64.zip` | Portable copy: unzip anywhere and run `Orbit.exe`. Nothing is installed. |
-| `SHA256SUMS.txt` | Checksums, if you want to verify your download. |
-| `Orbit-<version>-linux-x64.tar.gz` | **Linux** — unpack and run `./install.sh`. See [Orbit for Linux](linux/README.md). |
+### Which file do I need?
 
-**Requirements:** Windows 10 (version 1903 or later) or Windows 11, 64-bit. Nothing else — both downloads include everything Orbit needs, so you don't have to install .NET.
+All files are on the [Releases page](https://github.com/danny19862025/orbit-file-manager/releases/latest):
 
-<img src="docs/screenshots/installer.png" width="480" alt="Orbit Setup">
+| Your computer | Download | What it is |
+|---|---|---|
+| Windows 10 / 11 | **[`OrbitSetup-1.0.0.exe`](https://github.com/danny19862025/orbit-file-manager/releases/latest/download/OrbitSetup-1.0.0.exe)** | The installer — **recommended**. |
+| Windows 10 / 11 | [`Orbit-1.0.0-win-x64.zip`](https://github.com/danny19862025/orbit-file-manager/releases/latest/download/Orbit-1.0.0-win-x64.zip) | Portable copy: unzip anywhere and run `Orbit.exe`. Nothing is installed. |
+| Linux (64-bit) | **[`Orbit-1.0.0-linux-x64.tar.gz`](https://github.com/danny19862025/orbit-file-manager/releases/latest/download/Orbit-1.0.0-linux-x64.tar.gz)** | Linux package with an install script. |
+| Any | [`SHA256SUMS.txt`](https://github.com/danny19862025/orbit-file-manager/releases/latest/download/SHA256SUMS.txt) | Checksums, if you want to check your download wasn't damaged or changed. |
 
-The installer:
+### Windows — step by step
 
-- installs **for your account only**, into `%LocalAppData%\Programs\Orbit` by default — **no administrator prompt**;
-- adds a **Start menu** shortcut and, if you like, a **desktop** shortcut;
-- registers Orbit in **Settings › Apps** so it can be uninstalled like any other app;
-- can **open Orbit** when it finishes.
+**Requirements:** Windows 10 (version 1903 or later) or Windows 11, 64-bit. No administrator rights needed.
 
-> **Windows SmartScreen:** Orbit isn't code-signed yet, so the first time you run the installer Windows may show
-> *“Windows protected your PC”*. Click **More info › Run anyway**. You can check the file against `SHA256SUMS.txt` first.
+1. **Check your Windows.** Press <kbd>Win</kbd>+<kbd>R</kbd>, type `winver` and press <kbd>Enter</kbd> — you need Windows 10 version 1903 or newer, or Windows 11. (Almost every PC sold since 2010 is 64-bit.)
+2. **Download the installer:** [`OrbitSetup-1.0.0.exe`](https://github.com/danny19862025/orbit-file-manager/releases/latest/download/OrbitSetup-1.0.0.exe). It's saved to your **Downloads** folder.
+3. *(Optional)* **Check the download.** Open **PowerShell** in your Downloads folder and run
+   ```powershell
+   Get-FileHash .\OrbitSetup-1.0.0.exe
+   ```
+   The `Hash` it prints should be the same as the `OrbitSetup-1.0.0.exe` line in [`SHA256SUMS.txt`](https://github.com/danny19862025/orbit-file-manager/releases/latest/download/SHA256SUMS.txt) (letter case doesn't matter).
+4. **Run the installer** — double-click `OrbitSetup-1.0.0.exe`.
+   > **If you see “Windows protected your PC”:** Orbit isn't code-signed yet, so Microsoft SmartScreen warns about it the first time.
+   > Click **More info**, then **Run anyway**.
+5. **Choose your options** in the *Orbit Setup* window:
 
-Silent install (for scripts): `OrbitSetup-<version>.exe /quiet` — add `/dir="D:\Apps\Orbit"` to choose the folder and `/desktop` for a desktop shortcut.
+   <img src="docs/screenshots/installer.png" width="480" alt="Orbit Setup">
+
+   - **Install location** — `%LocalAppData%\Programs\Orbit` by default (that's `C:\Users\<you>\AppData\Local\Programs\Orbit`). Click **Browse…** to pick another folder; an `Orbit` folder is created inside it.
+   - **Create a desktop shortcut** — tick it if you want an icon on your desktop.
+   - **Open Orbit when setup finishes** — ticked by default.
+6. Click **Install**. It takes a few seconds; there's no administrator prompt, because Orbit installs **for your account only**.
+7. **Start Orbit** — it opens by itself if you left the box ticked. Later, open the **Start** menu and type **Orbit**. Right-click it › **Pin to taskbar** to keep it one click away.
+
+That's it. The installer also registered Orbit in **Settings › Apps**, so you can remove it like any other app.
+
+**Portable copy instead (no installer):**
+
+1. Download [`Orbit-1.0.0-win-x64.zip`](https://github.com/danny19862025/orbit-file-manager/releases/latest/download/Orbit-1.0.0-win-x64.zip).
+2. Right-click the zip › **Properties**, tick **Unblock** if it's there, then **OK** (stops Windows warning about every file inside).
+3. Right-click › **Extract All…** and choose a folder — for example a USB stick or `D:\Apps\Orbit`.
+4. Open that folder and double-click **`Orbit.exe`**. Nothing is added to the Start menu or Settings › Apps; to remove it, delete the folder.
+
+**Silent install (for scripts and IT):** `OrbitSetup-1.0.0.exe /quiet` installs with the defaults; add `/dir="D:\Apps\Orbit"` to choose the folder and `/desktop` for a desktop shortcut.
 
 ### Linux
 
 ![Orbit on Linux](docs/screenshots/linux-grid.png)
 
-Orbit runs on Linux too — KDE Plasma, GNOME and other desktops, 64-bit (x64). It's the same app: the same window, views,
-menus, shortcuts, themes, icon packs and tools, with Linux doing the jobs Windows' shell does — your desktop's **Trash**,
-mounted **drives** with Eject, **GVfs** for SMB / WebDAV shares, your **icon theme** and thumbnails, **mpv** for video
-and music previews.
+Orbit runs on Linux too — the same app, with the same window, views, menus, shortcuts, themes, icon packs and tools —
+using your desktop's **Trash**, mounted **drives** with Eject, **GVfs** for SMB / WebDAV shares, your **icon theme** and
+thumbnails, and **mpv** for video and music previews. See **[Orbit for Linux](linux/README.md)** for everything that works differently.
 
-**[⬇ Download Orbit for Linux](https://github.com/danny19862025/orbit-file-manager/releases/latest/download/Orbit-1.0.0-linux-x64.tar.gz)**, then:
+**Requirements:** a 64-bit (x86-64) Linux with a desktop — KDE Plasma, GNOME, Xfce, Cinnamon, Hyprland and others, on
+Wayland or X11 (Orbit uses XWayland on Wayland). No root / `sudo` needed for Orbit itself.
 
-```sh
-tar xf Orbit-1.0.0-linux-x64.tar.gz
-cd Orbit-1.0.0-linux-x64
-./install.sh              # for your account only — no root needed
-./install.sh --default    # optional: make Orbit your default app for folders
-```
+1. **Check your computer is 64-bit x86.** Open a terminal and run
+   ```sh
+   uname -m
+   ```
+   It should print `x86_64`. (ARM computers such as a Raspberry Pi print `aarch64`; there's no ARM download yet — see [Build from source](#build-from-source).)
+2. **Download the package** — either click [`Orbit-1.0.0-linux-x64.tar.gz`](https://github.com/danny19862025/orbit-file-manager/releases/latest/download/Orbit-1.0.0-linux-x64.tar.gz) (it's saved to `~/Downloads`), or in the terminal:
+   ```sh
+   cd ~/Downloads
+   wget https://github.com/danny19862025/orbit-file-manager/releases/latest/download/Orbit-1.0.0-linux-x64.tar.gz
+   ```
+   (No `wget`? Use `curl -LO <same address>` instead.)
+3. *(Optional)* **Check the download:**
+   ```sh
+   cd ~/Downloads
+   wget https://github.com/danny19862025/orbit-file-manager/releases/latest/download/SHA256SUMS.txt
+   sha256sum -c --ignore-missing SHA256SUMS.txt
+   ```
+   It should print `Orbit-1.0.0-linux-x64.tar.gz: OK`.
+4. **Unpack it:**
+   ```sh
+   cd ~/Downloads
+   tar xf Orbit-1.0.0-linux-x64.tar.gz
+   cd Orbit-1.0.0-linux-x64
+   ```
+   (Or right-click the file in your file manager › *Extract here*, then open a terminal in the new folder.)
+5. **Install it:**
+   ```sh
+   ./install.sh
+   ```
+   This takes a second and installs **for your account only**:
+   - the program → `~/.local/opt/orbit`
+   - a launcher in your **app menu** → `~/.local/share/applications/orbit-file-manager.desktop`
+   - the `orbit` command → `~/.local/bin/orbit`
+   - the app icon → `~/.local/share/icons/hicolor/256x256/apps/orbit-file-manager.png`
 
-Orbit then appears in your app menu, and `orbit` starts it from a terminal. Everything it needs is in the download
-(no .NET to install); `./uninstall.sh` removes it. Optional helpers such as `mpv`, `ffmpeg`, `gvfs-smb` and `udisks2`
-switch on media previews, conversion, network shares and eject — most desktops already have them.
-Settings live in `~/.config/Orbit` (same format as on Windows), and locked folders open on either system.
+   It prints `Installed Orbit to …` when it's done. You can now delete the downloaded `.tar.gz` and the unpacked folder.
+6. **Start Orbit** — open your app menu and search for **Orbit** (it's under *System* / *Utilities* as a *File Manager*), or type `orbit` in a terminal.
+   Right-click its taskbar icon › *Pin to Task Manager* / *Add to Favourites* to keep it handy.
+   - If the terminal says `orbit: command not found`, `~/.local/bin` isn't on your PATH yet. Log out and back in, or add it:
+     - **bash:** `echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc`
+     - **zsh:** `echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc`
+     - **fish:** `fish_add_path ~/.local/bin`
+   - If it doesn't show up in the app menu straight away, log out and back in (KDE users can also run `kbuildsycoca6`).
+7. *(Optional)* **Make Orbit your default app for folders** — so folders you open from other apps, the desktop or “Show in folder” open in Orbit:
+   ```sh
+   ~/.local/opt/orbit/install.sh --default
+   ```
+   (To go back, choose your old file manager in *System Settings › Default Applications*, or run `xdg-mime default org.kde.dolphin.desktop inode/directory` — use `org.gnome.Nautilus.desktop` on GNOME.)
+8. *(Optional)* **Install the helpers** for the extra features. Orbit works without them and tells you when one is needed; most desktops already have several:
 
-Full details, the list of helpers and everything that works differently: **[Orbit for Linux](linux/README.md)**.
+   | Helper | Turns on |
+   |---|---|
+   | `mpv` | Playing videos and music inside Quick preview |
+   | `ffmpeg` | Video thumbnails, video / audio conversion, HEIC / AVIF pictures |
+   | `poppler` (`pdftoppm`) | PDF previews and thumbnails |
+   | `imagemagick` | Converting pictures to TIFF / BMP / GIF |
+   | `gvfs` + `gvfs-smb` | SMB / Samba (Windows shares, NAS) and WebDAV |
+   | `udisks2` | Eject for USB sticks, mounting ISO images |
+   | `rclone` + `fuse3` | Mounting Google Drive / Dropbox as a folder |
+
+   One command installs them all:
+   - **Arch, Manjaro, EndeavourOS:** `sudo pacman -S --needed mpv ffmpeg poppler imagemagick gvfs gvfs-smb udisks2 rclone fuse3`
+   - **Debian, Ubuntu, Linux Mint, Pop!_OS:** `sudo apt install mpv ffmpeg poppler-utils imagemagick gvfs-backends udisks2 rclone fuse3`
+   - **Fedora:** `sudo dnf install mpv ffmpeg-free poppler-utils ImageMagick gvfs-smb udisks2 rclone fuse3`
+
+Your settings are saved in `~/.config/Orbit/settings.json` — the same format as on Windows — and folders locked with a password open on either system.
 
 ## Update
 
-Open **Settings › About › Check for updates**. If a newer release exists, download its installer and run it — it recognises the existing install, shows **Update**, closes Orbit if it's running, replaces the program files and keeps all your settings.
+**Windows:** open **Settings › About › Check for updates** in Orbit. If a newer version exists, click **Download**, run the new `OrbitSetup` — it recognises your install, shows **Update** instead of Install, closes Orbit if it's running, replaces the program files and keeps all your settings. For the portable copy, download the new zip and replace the folder.
+
+**Linux:** **Settings › About › Check for updates** tells you when there's a new version and opens its page. Download the new `Orbit-<version>-linux-x64.tar.gz` and repeat steps 4–5 above (`tar xf …`, `./install.sh`). The installer closes Orbit if it's running, replaces the program and keeps your settings.
 
 ## Uninstall
 
-**Settings › Apps › Installed apps › Orbit File Manager › Uninstall** (or run `Orbit.exe --uninstall`). Orbit asks before removing anything, then asks separately whether to also delete your settings — answer **No** to keep them for a later install. Only the folder the installer created is ever deleted. For the portable copy, just delete its folder.
+**Windows:** **Settings › Apps › Installed apps › Orbit File Manager › Uninstall** (or run `Orbit.exe --uninstall`). Orbit asks before removing anything, then asks separately whether to also delete your settings — answer **No** to keep them for a later install. Only the folder the installer created is ever deleted. For the portable copy, just delete its folder.
+
+**Linux:** in a terminal run
+```sh
+~/.local/opt/orbit/uninstall.sh            # removes Orbit, keeps your settings
+~/.local/opt/orbit/uninstall.sh --purge    # removes Orbit and your settings and search index too
+```
+It removes the program, the app-menu launcher, the `orbit` command and the icon. If you'd made Orbit your default folder app, pick another one in *System Settings › Default Applications*.
+
+## Installation problems
+
+| Problem | Fix |
+|---|---|
+| Windows: *“Windows protected your PC”* | Orbit isn't code-signed yet. Click **More info › Run anyway**. Check the file against `SHA256SUMS.txt` first if you like (step 3). |
+| Linux: `./install.sh: Permission denied` | The execute bit was lost (some archive tools do that). Run `bash install.sh` instead. |
+| Linux: `orbit: command not found` | Add `~/.local/bin` to your PATH — see step 6. |
+| Linux: Orbit isn't in the app menu | Log out and back in. On KDE you can run `kbuildsycoca6` instead. |
+| Linux: videos don't play in Quick preview | Install `mpv` (step 8). **Open** always plays them in your usual player. |
+| Linux: “needs GVfs” when connecting to a share | Install `gvfs` and `gvfs-smb` (step 8). |
+| Anything else | [Report a bug](https://github.com/danny19862025/orbit-file-manager/issues) and attach `error.log` from `%AppData%\Orbit` (Windows) or `~/.config/Orbit` (Linux). |
 
 ---
 

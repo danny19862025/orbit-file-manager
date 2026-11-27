@@ -10,7 +10,7 @@ the icon packs in `../Assets`.
 
 ## Install
 
-Download `Orbit-<version>-linux-x64.tar.gz` from the [Releases page](https://github.com/danny19862025/orbit-file-manager/releases/latest), then:
+For a full step-by-step guide (checking the download, PATH, default app, helpers for each distro) see [Install › Linux](../README.md#linux) in the main README. In short: download `Orbit-<version>-linux-x64.tar.gz` from the [Releases page](https://github.com/danny19862025/orbit-file-manager/releases/latest), then:
 
 ```sh
 tar xf Orbit-*-linux-x64.tar.gz
