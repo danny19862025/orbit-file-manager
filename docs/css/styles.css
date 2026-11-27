@@ -1747,6 +1747,143 @@ footer a:hover {
   cursor: pointer;
 }
 
+/* ==========================================================================
+   Installation Guide Modal (Linux & Windows Step-by-Step)
+   ========================================================================== */
+.guide-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1180;
+  background: rgba(8, 8, 14, 0.82);
+  backdrop-filter: blur(12px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.guide-modal.open {
+  display: flex;
+}
+
+.guide-dialog {
+  width: min(860px, 96vw);
+  max-height: 88vh;
+  border-radius: var(--radius-xl);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 32px 100px rgba(0, 0, 0, 0.65), var(--shadow-glow);
+}
+
+.guide-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--surface1);
+  background: var(--mantle);
+  flex-wrap: wrap;
+}
+
+.guide-body {
+  padding: 22px 24px 28px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.guide-step {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--surface0) 45%, transparent);
+  border: 1px solid color-mix(in srgb, var(--surface1) 55%, transparent);
+}
+
+.guide-step-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--lavender));
+  color: var(--crust);
+  font-weight: 800;
+  font-size: 0.82rem;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.guide-step-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.guide-step-content h4 {
+  font-size: 0.96rem;
+  margin-bottom: 4px;
+  color: var(--text);
+}
+
+.guide-step-content p {
+  font-size: 0.84rem;
+  color: var(--subtext);
+  margin-bottom: 6px;
+}
+
+.guide-cmd {
+  display: block;
+  margin-top: 6px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--crust);
+  border: 1px solid var(--surface1);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.77rem;
+  color: var(--lavender);
+  white-space: pre-wrap;
+  word-break: break-word;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.guide-cmd:hover {
+  border-color: var(--accent);
+}
+
+.guide-note {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--peach) 12%, var(--crust));
+  border-left: 3px solid var(--peach);
+  font-size: 0.8rem;
+  color: var(--text);
+  margin-top: 8px;
+}
+
+.guide-close-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--surface0);
+  color: var(--text);
+  border: 1px solid var(--surface2);
+  font-size: 1.15rem;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+
+.guide-close-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 /* Toast Notification */
 .toast {
   position: fixed;

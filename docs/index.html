@@ -33,6 +33,7 @@
       <li><a href="#cli">CLI &amp; Install</a></li>
     </ul>
     <div class="nav-actions">
+      <button class="btn btn-secondary btn-sm" type="button" data-open-guide="linux">📖 Install Guide</button>
       <a class="btn btn-ghost btn-sm" href="https://github.com/danny19862025/orbit-file-manager" target="_blank" rel="noopener">GitHub</a>
       <a class="btn btn-primary btn-sm" href="https://github.com/danny19862025/orbit-file-manager/releases/latest" target="_blank" rel="noopener">⬇ Download</a>
     </div>
@@ -108,6 +109,9 @@
         <a class="btn btn-secondary" href="https://github.com/danny19862025/orbit-file-manager/releases/latest/download/OrbitSetup-1.0.0.exe" target="_blank" rel="noopener">
           ⬇ Download for Windows (.exe)
         </a>
+        <button class="btn btn-secondary" type="button" data-open-guide="linux" style="border-color:var(--accent);">
+          📖 Installation Guide (Linux &amp; Windows)
+        </button>
         <a class="btn btn-ghost" href="https://github.com/danny19862025/orbit-file-manager" target="_blank" rel="noopener">
           ★ GitHub
         </a>
@@ -607,6 +611,7 @@
         <div class="hero-cta-row" style="margin-bottom:0;">
           <a class="btn btn-primary" href="https://github.com/danny19862025/orbit-file-manager/releases/latest/download/Orbit-1.0.0-linux-x64.tar.gz" target="_blank" rel="noopener">🐧 Download for Linux (.tar.gz)</a>
           <a class="btn btn-secondary" href="https://github.com/danny19862025/orbit-file-manager/releases/latest/download/OrbitSetup-1.0.0.exe" target="_blank" rel="noopener">⬇ Download for Windows (.exe)</a>
+          <button class="btn btn-secondary" type="button" data-open-guide="linux" style="border-color:var(--accent);">📖 Installation Guide</button>
           <a class="btn btn-ghost" href="https://buymeacoffee.com/danny1986" target="_blank" rel="noopener">☕ Buy Me a Coffee</a>
         </div>
       </div>
@@ -625,6 +630,23 @@
       </p>
     </div>
   </footer>
+
+  <!-- Installation Guide Modal (Linux & Windows) -->
+  <div class="guide-modal" id="guide-modal" role="dialog" aria-modal="true" aria-labelledby="guide-modal-title">
+    <div class="guide-dialog glass-strong">
+      <div class="guide-header">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+          <h3 id="guide-modal-title" style="font-size:1.2rem;">📖 Orbit Installation Guide</h3>
+          <div style="display:flex;gap:6px;">
+            <button class="pill-tab active" type="button" data-guide-os="linux">🐧 Linux</button>
+            <button class="pill-tab" type="button" data-guide-os="windows">🪟 Windows</button>
+          </div>
+        </div>
+        <button class="guide-close-btn" id="guide-close-btn" type="button" aria-label="Close installation guide">×</button>
+      </div>
+      <div class="guide-body" id="guide-body"></div>
+    </div>
+  </div>
 
   <!-- Fullscreen Lightbox -->
   <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Screenshot preview">

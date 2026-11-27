@@ -1011,7 +1011,226 @@ function initCliCommands() {
 }
 
 // ============================================================================
-// 13. Fullscreen Screenshot Lightbox
+// 13. Installation Guide Modal (Linux & Windows Step-by-Step)
+// ============================================================================
+function initInstallGuideModal() {
+  const modal = document.getElementById('guide-modal');
+  const body = document.getElementById('guide-body');
+  const closeBtn = document.getElementById('guide-close-btn');
+  const osBtns = document.querySelectorAll('[data-guide-os]');
+  const openBtns = document.querySelectorAll('[data-open-guide]');
+  if (!modal || !body) return;
+
+  const linuxHtml = `
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+      <div>
+        <strong style="font-size:0.96rem;">Requirements:</strong>
+        <span style="font-size:0.86rem;color:var(--subtext);">64-bit (<code>x86_64</code>) Linux with desktop (KDE Plasma, GNOME, Xfce, Cinnamon, Hyprland) on Wayland/XWayland or X11. No root/<code>sudo</code> or .NET needed.</span>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <a class="btn btn-primary btn-sm" href="https://github.com/danny19862025/orbit-file-manager/releases/latest/download/Orbit-1.0.0-linux-x64.tar.gz" target="_blank" rel="noopener">⬇ Orbit-1.0.0-linux-x64.tar.gz</a>
+        <a class="btn btn-ghost btn-sm" href="https://github.com/danny19862025/orbit-file-manager/releases/latest/download/SHA256SUMS.txt" target="_blank" rel="noopener">SHA256SUMS.txt</a>
+      </div>
+    </div>
+
+    <div class="guide-step">
+      <div class="guide-step-num">1</div>
+      <div class="guide-step-content">
+        <h4>Check your computer is 64-bit x86</h4>
+        <p>Open a terminal and verify it prints <code>x86_64</code> (ARM / <code>aarch64</code> users can build from source with <code>linux/build-release.sh</code>):</p>
+        <code class="guide-cmd" data-copy="uname -m">uname -m</code>
+      </div>
+    </div>
+
+    <div class="guide-step">
+      <div class="guide-step-num">2</div>
+      <div class="guide-step-content">
+        <h4>Download the Linux package</h4>
+        <p>Click the download button above (saves to <code>~/Downloads</code>), or download in your terminal (use <code>curl -LO</code> if you don't have <code>wget</code>):</p>
+        <code class="guide-cmd" data-copy="cd ~/Downloads && wget https://github.com/danny19862025/orbit-file-manager/releases/latest/download/Orbit-1.0.0-linux-x64.tar.gz">cd ~/Downloads
+wget https://github.com/danny19862025/orbit-file-manager/releases/latest/download/Orbit-1.0.0-linux-x64.tar.gz</code>
+      </div>
+    </div>
+
+    <div class="guide-step">
+      <div class="guide-step-num">3</div>
+      <div class="guide-step-content">
+        <h4>Optional: Verify SHA256 checksum</h4>
+        <p>Confirm the download wasn't corrupted (should print <code>Orbit-1.0.0-linux-x64.tar.gz: OK</code>):</p>
+        <code class="guide-cmd" data-copy="cd ~/Downloads && wget https://github.com/danny19862025/orbit-file-manager/releases/latest/download/SHA256SUMS.txt && sha256sum -c --ignore-missing SHA256SUMS.txt">cd ~/Downloads
+wget https://github.com/danny19862025/orbit-file-manager/releases/latest/download/SHA256SUMS.txt
+sha256sum -c --ignore-missing SHA256SUMS.txt</code>
+      </div>
+    </div>
+
+    <div class="guide-step">
+      <div class="guide-step-num">4</div>
+      <div class="guide-step-content">
+        <h4>Unpack &amp; run the per-user installer</h4>
+        <p>Installs for your account only into <code>~/.local/opt/orbit</code>, adds the app-menu entry, <code>~/.local/bin/orbit</code> command, and icon (if you get <em>Permission denied</em>, run <code>bash install.sh</code>):</p>
+        <code class="guide-cmd" data-copy="cd ~/Downloads && tar xf Orbit-1.0.0-linux-x64.tar.gz && cd Orbit-1.0.0-linux-x64 && ./install.sh">cd ~/Downloads
+tar xf Orbit-1.0.0-linux-x64.tar.gz
+cd Orbit-1.0.0-linux-x64
+./install.sh</code>
+      </div>
+    </div>
+
+    <div class="guide-step">
+      <div class="guide-step-num">5</div>
+      <div class="guide-step-content">
+        <h4>Start Orbit &amp; add <code>~/.local/bin</code> to PATH (if needed)</h4>
+        <p>Search for <strong>Orbit</strong> in your app menu or run <code>orbit</code> in a terminal. If <code>orbit</code> isn't found, add <code>~/.local/bin</code> to your PATH (KDE users can refresh menus with <code>kbuildsycoca6</code>):</p>
+        <code class="guide-cmd" data-copy="echo 'export PATH=&quot;$HOME/.local/bin:$PATH&quot;' >> ~/.bashrc">echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc   # bash
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc    # zsh
+fish_add_path ~/.local/bin                                 # fish</code>
+      </div>
+    </div>
+
+    <div class="guide-step">
+      <div class="guide-step-num">6</div>
+      <div class="guide-step-content">
+        <h4>Optional: Make Orbit your default app for folders</h4>
+        <p>Opens folders from other apps and the desktop directly in Orbit:</p>
+        <code class="guide-cmd" data-copy="~/.local/opt/orbit/install.sh --default">~/.local/opt/orbit/install.sh --default</code>
+      </div>
+    </div>
+
+    <div class="guide-step">
+      <div class="guide-step-num">7</div>
+      <div class="guide-step-content">
+        <h4>Optional: Install desktop helpers (one command per distro)</h4>
+        <p>Enables <code>mpv</code> media preview, <code>ffmpeg</code> conversion, <code>poppler</code> PDFs, <code>imagemagick</code>, <code>gvfs-smb</code> network shares, <code>udisks2</code> USB eject/ISO mount, and <code>rclone + fuse3</code> cloud mounts:</p>
+        <code class="guide-cmd" data-copy="sudo pacman -S --needed mpv ffmpeg poppler imagemagick gvfs gvfs-smb udisks2 rclone fuse3"># Arch / Manjaro / EndeavourOS
+sudo pacman -S --needed mpv ffmpeg poppler imagemagick gvfs gvfs-smb udisks2 rclone fuse3</code>
+        <code class="guide-cmd" data-copy="sudo apt install mpv ffmpeg poppler-utils imagemagick gvfs-backends udisks2 rclone fuse3"># Debian / Ubuntu / Linux Mint / Pop!_OS
+sudo apt install mpv ffmpeg poppler-utils imagemagick gvfs-backends udisks2 rclone fuse3</code>
+        <code class="guide-cmd" data-copy="sudo dnf install mpv ffmpeg-free poppler-utils ImageMagick gvfs-smb udisks2 rclone fuse3"># Fedora
+sudo dnf install mpv ffmpeg-free poppler-utils ImageMagick gvfs-smb udisks2 rclone fuse3</code>
+      </div>
+    </div>
+
+    <div class="guide-step">
+      <div class="guide-step-num">8</div>
+      <div class="guide-step-content">
+        <h4>Update or Uninstall anytime</h4>
+        <p>To update, unpack the new release and re-run <code>./install.sh</code> (keeps your settings). To uninstall:</p>
+        <code class="guide-cmd" data-copy="~/.local/opt/orbit/uninstall.sh">~/.local/opt/orbit/uninstall.sh          # keeps settings
+~/.local/opt/orbit/uninstall.sh --purge  # also removes settings &amp; search index</code>
+      </div>
+    </div>
+  `;
+
+  const windowsHtml = `
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+      <div>
+        <strong style="font-size:0.96rem;">Requirements:</strong>
+        <span style="font-size:0.86rem;color:var(--subtext);">Windows 10 (version 1903+) or Windows 11, 64-bit. No administrator rights and no .NET install needed.</span>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <a class="btn btn-primary btn-sm" href="https://github.com/danny19862025/orbit-file-manager/releases/latest/download/OrbitSetup-1.0.0.exe" target="_blank" rel="noopener">⬇ OrbitSetup-1.0.0.exe</a>
+        <a class="btn btn-secondary btn-sm" href="https://github.com/danny19862025/orbit-file-manager/releases/latest/download/Orbit-1.0.0-win-x64.zip" target="_blank" rel="noopener">Portable .zip</a>
+        <a class="btn btn-ghost btn-sm" href="https://github.com/danny19862025/orbit-file-manager/releases/latest/download/SHA256SUMS.txt" target="_blank" rel="noopener">SHA256SUMS.txt</a>
+      </div>
+    </div>
+
+    <div class="guide-step">
+      <div class="guide-step-num">1</div>
+      <div class="guide-step-content">
+        <h4>Check your Windows version</h4>
+        <p>Press <span class="kbd">Win</span>+<span class="kbd">R</span>, type <code>winver</code> and press <span class="kbd">Enter</span> — confirm Windows 10 (1903 or newer) or Windows 11 (64-bit).</p>
+      </div>
+    </div>
+
+    <div class="guide-step">
+      <div class="guide-step-num">2</div>
+      <div class="guide-step-content">
+        <h4>Download the installer</h4>
+        <p>Download <strong><code>OrbitSetup-1.0.0.exe</code></strong> using the button above. It saves into your <strong>Downloads</strong> folder.</p>
+      </div>
+    </div>
+
+    <div class="guide-step">
+      <div class="guide-step-num">3</div>
+      <div class="guide-step-content">
+        <h4>Optional: Verify SHA256 in PowerShell</h4>
+        <p>Open PowerShell in your Downloads folder and compare the printed hash against <code>SHA256SUMS.txt</code>:</p>
+        <code class="guide-cmd" data-copy="Get-FileHash .\\OrbitSetup-1.0.0.exe">Get-FileHash .\\OrbitSetup-1.0.0.exe</code>
+      </div>
+    </div>
+
+    <div class="guide-step">
+      <div class="guide-step-num">4</div>
+      <div class="guide-step-content">
+        <h4>Run <code>OrbitSetup-1.0.0.exe</code></h4>
+        <p>Double-click the installer to launch <em>Orbit Setup</em>.</p>
+        <div class="guide-note">
+          <strong>Windows SmartScreen:</strong> Orbit isn't code-signed yet, so Windows may show <em>“Windows protected your PC”</em> the first time. Click <strong>More info</strong> → <strong>Run anyway</strong>.
+        </div>
+      </div>
+    </div>
+
+    <div class="guide-step">
+      <div class="guide-step-num">5</div>
+      <div class="guide-step-content">
+        <h4>Choose your options &amp; click Install</h4>
+        <p>Installs for your account only into <code>%LocalAppData%\\Programs\\Orbit</code> (no UAC admin prompt), adds a Start menu entry, optional desktop shortcut, and registers in <strong>Settings › Apps</strong>. Right-click Orbit in Start › <strong>Pin to taskbar</strong>.</p>
+      </div>
+    </div>
+
+    <div class="guide-step">
+      <div class="guide-step-num">6</div>
+      <div class="guide-step-content">
+        <h4>Prefer Portable (no installer) or Silent Install?</h4>
+        <p><strong>Portable ZIP:</strong> Download <code>Orbit-1.0.0-win-x64.zip</code> → Right-click › Properties › tick <strong>Unblock</strong> › OK → Extract All → run <code>Orbit.exe</code>.</p>
+        <p><strong>Silent install (scripts / IT):</strong></p>
+        <code class="guide-cmd" data-copy='OrbitSetup-1.0.0.exe /quiet /dir="D:\\Apps\\Orbit" /desktop'>OrbitSetup-1.0.0.exe /quiet /dir="D:\\Apps\\Orbit" /desktop</code>
+      </div>
+    </div>
+
+    <div class="guide-step">
+      <div class="guide-step-num">7</div>
+      <div class="guide-step-content">
+        <h4>Update or Uninstall anytime</h4>
+        <p><strong>Update:</strong> Open <strong>Settings › About › Check for updates</strong> and run the new <code>OrbitSetup</code> — it upgrades in place and keeps all your settings.</p>
+        <p><strong>Uninstall:</strong> Use <strong>Settings › Apps › Orbit File Manager › Uninstall</strong> (or run <code>Orbit.exe --uninstall</code>). It asks separately whether to keep your settings.</p>
+      </div>
+    </div>
+  `;
+
+  function renderOs(os) {
+    osBtns.forEach((b) => b.classList.toggle('active', b.dataset.guideOs === os));
+    body.innerHTML = os === 'windows' ? windowsHtml : linuxHtml;
+    body.scrollTop = 0;
+    body.querySelectorAll('.guide-cmd').forEach((el) => {
+      el.title = 'Click to copy command';
+      el.addEventListener('click', () => {
+        const txt = el.dataset.copy || el.textContent;
+        navigator.clipboard?.writeText(txt).catch(() => {});
+        showToast('Copied command to clipboard');
+      });
+    });
+  }
+
+  function open(os = 'linux') {
+    renderOs(os);
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function close() {
+    modal.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  openBtns.forEach((btn) => btn.addEventListener('click', () => open(btn.dataset.openGuide || 'linux')));
+  osBtns.forEach((btn) => btn.addEventListener('click', () => renderOs(btn.dataset.guideOs)));
+  closeBtn?.addEventListener('click', close);
+  modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
+  window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal.classList.contains('open')) close(); });
+}
+
+// ============================================================================
+// 14. Fullscreen Screenshot Lightbox
 // ============================================================================
 function bindZoomImages(scope = document) {
   const modal = document.getElementById('lightbox');
@@ -1059,5 +1278,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initShortcutsExplorer();
   initPlatformAndLinux();
   initCliCommands();
+  initInstallGuideModal();
   initLightbox();
 });
