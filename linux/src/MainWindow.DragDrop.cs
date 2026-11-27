@@ -17,7 +17,13 @@ namespace Orbit;
 /// <summary>Drag &amp; drop: dragging out, drop feedback, spring-loaded folders, tab/breadcrumb/sidebar targets, tab reordering, marquee selection.</summary>
 public partial class MainWindow
 {
-    const string TabFormat = "OrbitTab";
+    /// <summary>A tab being dragged (only within Orbit).</summary>
+    static readonly DataFormat<TabState> TabFormat = DataFormat.CreateInProcessFormat<TabState>("orbit-tab");
+    /// <summary>The formats other file managers use for lists of files (drag and drop, and the clipboard).</summary>
+    static readonly DataFormat<byte[]> UriListFormat = DataFormat.CreateBytesPlatformFormat("text/uri-list"),
+                                       GnomeFilesFormat = DataFormat.CreateBytesPlatformFormat("x-special/gnome-copied-files"),
+                                       KdeCutFormat = DataFormat.CreateBytesPlatformFormat("application/x-kde-cutselection");
+    PointerPressedEventArgs tabPress, dzPress;
 
     readonly DispatcherTimer springTimer;
     FileItem springItem;
@@ -59,17 +65,15 @@ public partial class MainWindow
     // =====================================================================
     // Data on the drag-and-drop clipboard
     // =====================================================================
-    static string[] GetDropFiles(IDataObject data)
+    static string[] GetDropFiles(IDataTransfer data)
     {
+        if (data == null) return null;
         try
         {
-            if (data.Contains(DataFormats.Files))
-            {
-                var files = data.GetFiles()?.Select(f => f.TryGetLocalPath()).Where(p => p != null).ToArray();
-                if (files is { Length: > 0 }) return files;
-            }
-            foreach (var fmt in new[] { "text/uri-list", "x-special/gnome-copied-files" })
-                if (data.Contains(fmt) && data.Get(fmt) is { } raw)
+            var files = data.TryGetFiles()?.Select(f => f.TryGetLocalPath()).Where(p => p != null).ToArray();
+            if (files is { Length: > 0 }) return files;
+            foreach (var fmt in new[] { UriListFormat, GnomeFilesFormat })
+                if (data.Contains(fmt) && data.TryGetValue(fmt) is { } raw)
                 {
                     var lines = AsText(raw).Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                                            .Where(l => !l.StartsWith('#') && l is not ("copy" or "cut")).Select(UriToPath).Where(p => p != null).ToArray();
@@ -80,40 +84,44 @@ public partial class MainWindow
         return null;
     }
 
-    static bool TryGetDropFiles(IDataObject data, out string[] files)
+    static bool TryGetDropFiles(IDataTransfer data, out string[] files)
     {
         files = GetDropFiles(data);
         return files != null && files.Length > 0;
     }
 
-    async Task<DataObject> FileDragData(string[] paths)
+    /// <summary>Files for dragging to other apps: one file item each (sent as text/uri-list to X11 apps).</summary>
+    async Task<DataTransfer> FileDragData(string[] paths)
     {
-        var data = new DataObject();
-        var items = new List<IStorageItem>();
+        var data = new DataTransfer();
         foreach (var p in paths)
         {
             try
             {
                 IStorageItem it = Directory.Exists(p) ? await StorageProvider.TryGetFolderFromPathAsync(p) : await StorageProvider.TryGetFileFromPathAsync(p);
-                if (it != null) items.Add(it);
+                if (it != null) data.Add(DataTransferItem.CreateFile(it));
             }
             catch { }
         }
-        if (items.Count > 0) data.Set(DataFormats.Files, items);
-        data.Set("text/uri-list", Encoding.UTF8.GetBytes(string.Join("\r\n", paths.Select(IconService.FileUri)) + "\r\n"));
-        data.Set(DataFormats.Text, string.Join("\n", paths));
+        if (data.Items.Count == 0)
+        {
+            var item = new DataTransferItem();
+            item.Set(UriListFormat, Encoding.UTF8.GetBytes(string.Join("\r\n", paths.Select(IconService.FileUri)) + "\r\n"));
+            item.SetText(string.Join("\n", paths));
+            data.Add(item);
+        }
         return data;
     }
 
     // =====================================================================
     // Dragging files out of the list
     // =====================================================================
-    async void StartFileDrag(Control source, string[] paths, PointerEventArgs trigger, bool copyOnly = false)
+    async void StartFileDrag(Control source, string[] paths, PointerPressedEventArgs trigger, bool copyOnly = false)
     {
         try
         {
             var data = await FileDragData(paths);
-            await DragDrop.DoDragDrop(trigger, data, copyOnly ? DragDropEffects.Copy : DragDropEffects.Copy | DragDropEffects.Move | DragDropEffects.Link);
+            await DragDrop.DoDragDropAsync(trigger, data, copyOnly ? DragDropEffects.Copy : DragDropEffects.Copy | DragDropEffects.Move | DragDropEffects.Link);
         }
         catch (Exception ex)
         {
@@ -187,7 +195,7 @@ public partial class MainWindow
         RememberAllowed(e);
         if (TabDragOverContent(e)) return;
         e.Handled = true;
-        if (!TryGetDropFiles(e.Data, out var files)) { e.DragEffects = DragDropEffects.None; SetDropTarget(null); ShowDropFeedback(null, DragDropEffects.None, null); return; }
+        if (!TryGetDropFiles(e.DataTransfer, out var files)) { e.DragEffects = DragDropEffects.None; SetDropTarget(null); ShowDropFeedback(null, DragDropEffects.None, null); return; }
         var target = DropTargetFor(e, files, out var over);
         SetDropTarget(over);
         e.DragEffects = target != null ? ChooseEffect(e, files, target) : DragDropEffects.None;
@@ -212,7 +220,7 @@ public partial class MainWindow
         e.Handled = true;
         SetDropTarget(null);
         ShowDropFeedback(null, DragDropEffects.None, null);
-        if (!TryGetDropFiles(e.Data, out var files)) return;
+        if (!TryGetDropFiles(e.DataTransfer, out var files)) return;
         var target = DropTargetFor(e, files, out _);
         if (target == null) { if (Archives.IsArc(current?.Path)) Toast(ReadOnlyArchive); return; }
         var eff = ChooseEffect(e, files, target);
@@ -318,9 +326,9 @@ public partial class MainWindow
         if (s == null || FindAncestor<Border>(e.Source) is Border b && ReferenceEquals(b, PlacesDropHint)) { PlacesHint_DragOver(e); return; }
         e.Handled = true;
         e.DragEffects = DragDropEffects.None;
-        if (s.Kind == "recycle" && TryGetDropFiles(e.Data, out _))
+        if (s.Kind == "recycle" && TryGetDropFiles(e.DataTransfer, out _))
             e.DragEffects = DragDropEffects.Move;
-        else if (!IsTag(s.Path) && s.Kind is not ("recycle" or "connect" or "server") && TryGetDropFiles(e.Data, out var files))
+        else if (!IsTag(s.Path) && s.Kind is not ("recycle" or "connect" or "server") && TryGetDropFiles(e.DataTransfer, out var files))
             e.DragEffects = ChooseEffect(e, files, s.Path);
     }
 
@@ -329,13 +337,13 @@ public partial class MainWindow
         var s = SideItemFrom(e.Source);
         if (s == null) { PlacesHint_Drop(e); return; }
         e.Handled = true;
-        if (s.Kind == "recycle" && TryGetDropFiles(e.Data, out var binned))
+        if (s.Kind == "recycle" && TryGetDropFiles(e.DataTransfer, out var binned))
             RecycleDropped(binned);
-        else if (!IsTag(s.Path) && s.Kind is not ("recycle" or "connect" or "server") && TryGetDropFiles(e.Data, out var files))
+        else if (!IsTag(s.Path) && s.Kind is not ("recycle" or "connect" or "server") && TryGetDropFiles(e.DataTransfer, out var files))
             DoTransfer(files, s.Path, ChooseEffect(e, files, s.Path));
     }
 
-    static List<string> DroppedFolders(IDataObject data)
+    static List<string> DroppedFolders(IDataTransfer data)
     {
         if (!TryGetDropFiles(data, out var files)) return new List<string>();
         return files.Where(f => { try { return Directory.Exists(f); } catch { return false; } }).ToList();
@@ -343,7 +351,7 @@ public partial class MainWindow
 
     void Sidebar_PreviewDragOver(object sender, DragEventArgs e)
     {
-        bool folders = DroppedFolders(e.Data).Count > 0;
+        bool folders = DroppedFolders(e.DataTransfer).Count > 0;
         PlacesDropHint.IsVisible = folders && TglPlaces.IsChecked == true;
     }
 
@@ -357,7 +365,7 @@ public partial class MainWindow
     void PlacesHint_DragOver(DragEventArgs e)
     {
         if (FindAncestor<Border>(e.Source) is not Border b || !ReferenceEquals(b, PlacesDropHint)) { e.DragEffects = DragDropEffects.None; return; }
-        e.DragEffects = DroppedFolders(e.Data).Count > 0 ? DragDropEffects.Link : DragDropEffects.None;
+        e.DragEffects = DroppedFolders(e.DataTransfer).Count > 0 ? DragDropEffects.Link : DragDropEffects.None;
         e.Handled = true;
     }
 
@@ -366,7 +374,7 @@ public partial class MainWindow
         if (FindAncestor<Border>(e.Source) is not Border b || !ReferenceEquals(b, PlacesDropHint)) return;
         e.Handled = true;
         e.DragEffects = DragDropEffects.Link; // only a shortcut is added; the source keeps its files
-        foreach (var f in DroppedFolders(e.Data)) PinPlace(f);
+        foreach (var f in DroppedFolders(e.DataTransfer)) PinPlace(f);
         PlacesDropHint.IsVisible = false;
     }
 
@@ -391,6 +399,7 @@ public partial class MainWindow
         {
             if (e.ClickCount == 2) return;
             tabDragStart = e.GetPosition(this);
+            tabPress = e;
             SwitchTo(t);
         }
     }
@@ -412,10 +421,10 @@ public partial class MainWindow
         if (Math.Abs(p.X - tabDragStart.Value.X) < 10 && Math.Abs(p.Y - tabDragStart.Value.Y) < 10) return;
         tabDragStart = null;
         if (FindTabBorder(e.Source as Visual)?.Tag is not TabState t || Tabs.Count < 2) return;
-        var data = new DataObject();
-        data.Set(TabFormat, t);
+        var data = new DataTransfer();
+        data.Add(DataTransferItem.Create(TabFormat, t));
         tabDragging = t;
-        try { await DragDrop.DoDragDrop(e, data, DragDropEffects.Move); }
+        try { if (tabPress != null) await DragDrop.DoDragDropAsync(tabPress, data, DragDropEffects.Move); }
         catch { }
         tabDragging = null;
         SplitDropZone.IsVisible = false;
@@ -424,7 +433,7 @@ public partial class MainWindow
 
     void Tab_DragEnter(object sender, DragEventArgs e)
     {
-        if (TabFrom(e.Source) is not TabState t || e.Data.Contains(TabFormat)) return;
+        if (TabFrom(e.Source) is not TabState t || e.DataTransfer.Contains(TabFormat)) return;
         if (!ReferenceEquals(t, current))
         {
             springTab = t;
@@ -440,9 +449,9 @@ public partial class MainWindow
         e.Handled = true;
         e.DragEffects = DragDropEffects.None;
         if (TabFrom(e.Source) is not TabState t) return;
-        if (e.Data.Contains(TabFormat))
+        if (e.DataTransfer.Contains(TabFormat))
         {
-            if (e.Data.Get(TabFormat) is TabState moving && !ReferenceEquals(moving, t))
+            if (e.DataTransfer.TryGetValue(TabFormat) is TabState moving && !ReferenceEquals(moving, t))
             {
                 int from = Tabs.IndexOf(moving), to = Tabs.IndexOf(t);
                 if (from >= 0 && to >= 0) Tabs.Move(from, to);
@@ -450,7 +459,7 @@ public partial class MainWindow
             e.DragEffects = DragDropEffects.Move;
             return;
         }
-        if (IsTag(t.Path) || !TryGetDropFiles(e.Data, out var files)) return;
+        if (IsTag(t.Path) || !TryGetDropFiles(e.DataTransfer, out var files)) return;
         e.DragEffects = ChooseEffect(e, files, t.Path);
     }
 
@@ -468,8 +477,8 @@ public partial class MainWindow
         e.Handled = true;
         springTimer.Stop();
         springTab = null;
-        if (e.Data.Contains(TabFormat)) { SaveSoon(); return; }
-        if (TabFrom(e.Source) is not TabState t || IsTag(t.Path) || !TryGetDropFiles(e.Data, out var files)) return;
+        if (e.DataTransfer.Contains(TabFormat)) { SaveSoon(); return; }
+        if (TabFrom(e.Source) is not TabState t || IsTag(t.Path) || !TryGetDropFiles(e.DataTransfer, out var files)) return;
         var eff = ChooseEffect(e, files, t.Path);
         e.DragEffects = eff;
         DoTransfer(files, t.Path, eff);
@@ -485,14 +494,14 @@ public partial class MainWindow
         RememberAllowed(e);
         e.Handled = true;
         e.DragEffects = DragDropEffects.None;
-        if (CrumbFrom(e.Source) is Crumb c && c.Path != null && !IsTag(c.Path) && !Archives.IsArc(c.Path) && TryGetDropFiles(e.Data, out var files))
+        if (CrumbFrom(e.Source) is Crumb c && c.Path != null && !IsTag(c.Path) && !Archives.IsArc(c.Path) && TryGetDropFiles(e.DataTransfer, out var files))
             e.DragEffects = ChooseEffect(e, files, c.Path);
     }
 
     void Crumb_Drop(object sender, DragEventArgs e)
     {
         e.Handled = true;
-        if (CrumbFrom(e.Source) is Crumb c && c.Path != null && !IsTag(c.Path) && !Archives.IsArc(c.Path) && TryGetDropFiles(e.Data, out var files))
+        if (CrumbFrom(e.Source) is Crumb c && c.Path != null && !IsTag(c.Path) && !Archives.IsArc(c.Path) && TryGetDropFiles(e.DataTransfer, out var files))
         {
             var eff = ChooseEffect(e, files, c.Path);
             e.DragEffects = eff;
@@ -511,7 +520,7 @@ public partial class MainWindow
         DropzoneBorder.AddHandler(DragDrop.DragOverEvent, (_, e) =>
         {
             e.Handled = true;
-            if (dzDragging || !TryGetDropFiles(e.Data, out var _none)) { e.DragEffects = DragDropEffects.None; return; }
+            if (dzDragging || !TryGetDropFiles(e.DataTransfer, out var _none)) { e.DragEffects = DragDropEffects.None; return; }
             e.DragEffects = (e.DragEffects & DragDropEffects.Link) != 0 ? DragDropEffects.Link : DragDropEffects.Copy;
             DropzoneBorder.Bind(Border.BorderBrushProperty, DropzoneBorder.GetResourceObservable("AccentBrush"));
         });
@@ -521,7 +530,7 @@ public partial class MainWindow
             e.Handled = true;
             DropzoneBorder.Bind(Border.BorderBrushProperty, DropzoneBorder.GetResourceObservable("LineBrush"));
             if (dzDragging) return;
-            if (TryGetDropFiles(e.Data, out var files))
+            if (TryGetDropFiles(e.DataTransfer, out var files))
             {
                 e.DragEffects = DragDropEffects.Link;
                 AddToDropzone(files);
@@ -536,6 +545,7 @@ public partial class MainWindow
             if (pt.Properties.IsRightButtonPressed && dzItem != null) { e.Handled = true; ShowDropzoneMenu(FindDzBorder(e.Source as Visual), dzItem); return; }
             if (!pt.Properties.IsLeftButtonPressed) return;
             dzStart = e.GetPosition(this);
+            dzPress = e;
             if (e.ClickCount == 2 && dzItem != null)
             {
                 var f = dzItem;
@@ -548,7 +558,7 @@ public partial class MainWindow
         }, RoutingStrategies.Tunnel);
         DzList.AddHandler(PointerMovedEvent, (_, e) => DzTryDrag(e, dzItem == null ? null : new[] { dzItem.FullPath }), RoutingStrategies.Tunnel);
         DzList.AddHandler(PointerReleasedEvent, (_, _) => dzStart = null, RoutingStrategies.Tunnel);
-        DzHeader.PointerPressed += (_, e) => { dzItem = null; dzStart = e.GetPosition(this); };
+        DzHeader.PointerPressed += (_, e) => { dzItem = null; dzStart = e.GetPosition(this); dzPress = e; };
         DzHeader.PointerMoved += (_, e) => DzTryDrag(e, DropItems.Count == 0 ? null : DropItems.Select(f => f.FullPath).ToArray());
         DzHeader.PointerReleased += (_, _) => dzStart = null;
     }
@@ -570,7 +580,7 @@ public partial class MainWindow
         try
         {
             var data = await FileDragData(paths);
-            await DragDrop.DoDragDrop(e, data, DragDropEffects.Copy | DragDropEffects.Move | DragDropEffects.Link);
+            if (dzPress != null) await DragDrop.DoDragDropAsync(dzPress, data, DragDropEffects.Copy | DragDropEffects.Move | DragDropEffects.Link);
         }
         catch { }
         finally { dzDragging = false; SetDropTarget(null); ShowDropFeedback(null, DragDropEffects.None, null); }

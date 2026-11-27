@@ -67,7 +67,7 @@ public partial class MainWindow
     }
 
     // ---------- drag files out of an archive (extracts first) ----------
-    async void StartArchiveDrag(ListBox list, List<FileItem> sel, PointerEventArgs press)
+    async void StartArchiveDrag(ListBox list, List<FileItem> sel, PointerPressedEventArgs press)
     {
         Cursor = new Cursor(StandardCursorType.Wait);
         List<string> paths;

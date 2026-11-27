@@ -124,7 +124,7 @@ public class OrbitWindow : Window
 
     public OrbitWindow()
     {
-        SystemDecorations = SystemDecorations.None;
+        WindowDecorations = WindowDecorations.None;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
         ShowInTaskbar = false;
         Icon = MainWindow.AppIcon;

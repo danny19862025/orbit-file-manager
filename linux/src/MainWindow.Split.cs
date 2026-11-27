@@ -22,6 +22,7 @@ public partial class MainWindow
     int splitVersion;
     Point? splitDragStart;
     FileItem splitDragItem;
+    PointerPressedEventArgs splitPress;
 
     bool SplitOpen => splitPath != null;
 
@@ -293,6 +294,7 @@ public partial class MainWindow
         }
         if (!pt.Properties.IsLeftButtonPressed) return;
         splitDragStart = splitDragItem == null ? null : e.GetPosition(SplitList);
+        splitPress = e;
         if (splitDragItem == null && FindAncestor<ScrollBar>(e.Source) == null) SplitList.UnselectAll();
     }
 
@@ -310,9 +312,9 @@ public partial class MainWindow
         var sel = SplitList.SelectedItems.Contains(splitDragItem) ? SplitSelected() : new List<FileItem> { splitDragItem };
         splitDragStart = null;
         splitDragItem = null;
-        if (sel.Any(f => f.InArchive)) { StartArchiveDrag(SplitList, sel, e); return; }
+        if (sel.Any(f => f.InArchive)) { StartArchiveDrag(SplitList, sel, splitPress); return; }
         if (sel.Any(f => f.IsRemote)) { Toast("Server files can't be dragged out yet. Right-click › Copy instead."); return; }
-        StartFileDrag(SplitList, sel.Select(f => f.FullPath).ToArray(), e);
+        StartFileDrag(SplitList, sel.Select(f => f.FullPath).ToArray(), splitPress);
     }
 
     // ---------- drop into the split pane ----------
@@ -328,7 +330,7 @@ public partial class MainWindow
     {
         RememberAllowed(e);
         e.Handled = true;
-        if (!TryGetDropFiles(e.Data, out var files)) { e.DragEffects = DragDropEffects.None; SetDropTarget(null); return; }
+        if (!TryGetDropFiles(e.DataTransfer, out var files)) { e.DragEffects = DragDropEffects.None; SetDropTarget(null); return; }
         var target = SplitDropTarget(e, files, out var over);
         SetDropTarget(over);
         e.DragEffects = target != null ? ChooseEffect(e, files, target) : DragDropEffects.None;
@@ -338,7 +340,7 @@ public partial class MainWindow
     {
         e.Handled = true;
         SetDropTarget(null);
-        if (!TryGetDropFiles(e.Data, out var files)) return;
+        if (!TryGetDropFiles(e.DataTransfer, out var files)) return;
         var target = SplitDropTarget(e, files, out _);
         if (target == null) { Toast(ReadOnlyArchive); return; }
         var eff = ChooseEffect(e, files, target);
@@ -349,10 +351,10 @@ public partial class MainWindow
     // ---------- dragging a tab onto the content area ----------
     bool TabDragOverContent(DragEventArgs e)
     {
-        if (!e.Data.Contains(TabFormat)) return false;
+        if (!e.DataTransfer.Contains(TabFormat)) return false;
         e.Handled = true;
         bool rightHalf = e.GetPosition(ContentHost).X > ContentHost.Bounds.Width / 2;
-        var tab = e.Data.Get(TabFormat) as TabState;
+        var tab = e.DataTransfer.TryGetValue(TabFormat);
         if (rightHalf && tab != null && !IsTag(tab.Path))
         {
             e.DragEffects = DragDropEffects.Move;
@@ -370,10 +372,10 @@ public partial class MainWindow
 
     bool TabDropOnContent(DragEventArgs e)
     {
-        if (!e.Data.Contains(TabFormat)) return false;
+        if (!e.DataTransfer.Contains(TabFormat)) return false;
         e.Handled = true;
         SplitDropZone.IsVisible = false;
-        if (e.GetPosition(ContentHost).X > ContentHost.Bounds.Width / 2 && e.Data.Get(TabFormat) is TabState tab && !IsTag(tab.Path))
+        if (e.GetPosition(ContentHost).X > ContentHost.Bounds.Width / 2 && e.DataTransfer.TryGetValue(TabFormat) is TabState tab && !IsTag(tab.Path))
         {
             OpenSplit(tab.Path);
             if (Tabs.Count > 1 && !ReferenceEquals(tab, current)) CloseTab(tab); // the tab moves into the split pane

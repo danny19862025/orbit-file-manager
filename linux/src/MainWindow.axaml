@@ -3,7 +3,7 @@
         xmlns:local="using:Orbit"
         x:Class="Orbit.MainWindow"
         Title="Orbit" Width="1240" Height="800" MinWidth="720" MinHeight="420"
-        SystemDecorations="None" Background="{DynamicResource SidebarBg}" Foreground="{DynamicResource TextBrush}"
+        WindowDecorations="None" Background="{DynamicResource SidebarBg}" Foreground="{DynamicResource TextBrush}"
         FontFamily="{StaticResource UiFont}" FontSize="13" Icon="avares://orbit/Assets/orbit.png">
 
   <Window.Resources>
@@ -565,7 +565,7 @@
                 <TextBlock Text="&#xE721;" FontFamily="{StaticResource IconFont}" FontSize="18" Foreground="{DynamicResource MutedBrush}" VerticalAlignment="Center" Margin="0,0,14,0"/>
                 <TextBox x:Name="FindBox" Grid.Column="1" Classes="find" FontSize="20" BorderThickness="0" Background="Transparent"
                          Foreground="{DynamicResource TextBrush}" CaretBrush="{DynamicResource AccentBrush}" SelectionBrush="{DynamicResource AccentBrush}"
-                         Watermark="Search every file and folder…" VerticalContentAlignment="Center" Padding="2,4"/>
+                         PlaceholderText="Search every file and folder…" VerticalContentAlignment="Center" Padding="2,4"/>
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,0,0">
                   <TextBlock x:Name="FindTime" Foreground="{DynamicResource AccentBrush}" FontWeight="SemiBold" VerticalAlignment="Center"/>
                   <Border Width="1" Height="18" Background="{DynamicResource LineBrush}" Margin="12,0"/>

@@ -251,6 +251,15 @@ public partial class MainWindow : Window
         }
         else WindowStartupLocation = WindowStartupLocation.CenterScreen;
         if (S.Maximized) WindowState = WindowState.Maximized;
+        // automated tests (tools/) place windows explicitly: ORBIT_TEST_GEOMETRY="x,y,width,height"
+        if (Environment.GetEnvironmentVariable("ORBIT_TEST_GEOMETRY") is { } g && g.Split(',') is { Length: 4 } p)
+        {
+            WindowState = WindowState.Normal;
+            WindowStartupLocation = WindowStartupLocation.Manual;
+            Position = new PixelPoint(int.Parse(p[0]), int.Parse(p[1]));
+            Width = double.Parse(p[2]);
+            Height = double.Parse(p[3]);
+        }
     }
 
     void CaptureState()

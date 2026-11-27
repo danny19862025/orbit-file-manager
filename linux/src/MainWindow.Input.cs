@@ -8,6 +8,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -176,7 +177,7 @@ public partial class MainWindow
         {
             var arcSel = list.SelectedItems.Contains(dragItem) ? Selected() : new List<FileItem> { dragItem };
             dragStart = null; dragItem = null; pendingSingle = null;
-            StartArchiveDrag(list, arcSel, e);
+            StartArchiveDrag(list, arcSel, press);
             return;
         }
         if (dragItem.IsRemote)
@@ -192,7 +193,7 @@ public partial class MainWindow
         dragStart = null;
         dragItem = null;
         pendingSingle = null;
-        StartFileDrag(list, paths, e);
+        StartFileDrag(list, paths, press);
     }
 
     void List_PreviewPointerReleased(object sender, PointerReleasedEventArgs e)
@@ -580,7 +581,6 @@ public partial class MainWindow
     // =====================================================================
     // Clipboard (works with Dolphin, Files, Thunar…: text/uri-list + the GNOME and KDE cut markers)
     // =====================================================================
-    const string UriList = "text/uri-list", GnomeFiles = "x-special/gnome-copied-files", KdeCut = "application/x-kde-cutselection";
 
     async void SetClipboardText(string text)
     {
@@ -603,20 +603,16 @@ public partial class MainWindow
     {
         try
         {
-            var data = new DataObject();
-            var uris = string.Join("\r\n", paths.Select(IconService.FileUri)) + "\r\n";
-            data.Set(UriList, Encoding.UTF8.GetBytes(uris));
-            data.Set(GnomeFiles, Encoding.UTF8.GetBytes((cut ? "cut\n" : "copy\n") + string.Join("\n", paths.Select(IconService.FileUri))));
-            data.Set(KdeCut, Encoding.UTF8.GetBytes(cut ? "1" : "0"));
-            data.Set(DataFormats.Text, string.Join("\n", paths));
-            var items = new List<IStorageItem>();
-            foreach (var p in paths)
-            {
-                IStorageItem it = Directory.Exists(p) ? await StorageProvider.TryGetFolderFromPathAsync(p) : await StorageProvider.TryGetFileFromPathAsync(p);
-                if (it != null) items.Add(it);
-            }
-            if (items.Count > 0) data.Set(DataFormats.Files, items);
-            await Clipboard!.SetDataObjectAsync(data);
+            // the formats Dolphin, Files, Thunar and other file managers read (and Orbit reads back)
+            var item = new DataTransferItem();
+            var uris = paths.Select(IconService.FileUri).ToList();
+            item.Set(UriListFormat, Encoding.UTF8.GetBytes(string.Join("\r\n", uris) + "\r\n"));
+            item.Set(GnomeFilesFormat, Encoding.UTF8.GetBytes((cut ? "cut\n" : "copy\n") + string.Join("\n", uris)));
+            item.Set(KdeCutFormat, Encoding.UTF8.GetBytes(cut ? "1" : "0"));
+            item.SetText(string.Join("\n", paths));
+            var data = new DataTransfer();
+            data.Add(item);
+            await Clipboard!.SetDataAsync(data);
             clipboardHasFiles = true;
             UpdateCommandBar();
             return true;
@@ -651,20 +647,20 @@ public partial class MainWindow
         try
         {
             var cb = Clipboard!;
-            var formats = await cb.GetFormatsAsync();
+            var formats = await cb.GetDataFormatsAsync();
             string[] files = null;
             bool move = false;
-            if (formats.Contains(GnomeFiles) && await cb.GetDataAsync(GnomeFiles) is { } g)
+            if (formats.Contains(GnomeFilesFormat) && await cb.TryGetValueAsync(GnomeFilesFormat) is { } g)
             {
                 var lines = AsText(g).Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
                 if (lines.Length > 1) { move = lines[0] == "cut"; files = lines.Skip(1).Select(UriToPath).Where(p => p != null).ToArray(); }
             }
-            if ((files == null || files.Length == 0) && formats.Contains(UriList) && await cb.GetDataAsync(UriList) is { } u)
+            if ((files == null || files.Length == 0) && formats.Contains(UriListFormat) && await cb.TryGetValueAsync(UriListFormat) is { } u)
                 files = AsText(u).Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                                  .Where(l => !l.StartsWith('#')).Select(UriToPath).Where(p => p != null).ToArray();
-            if ((files == null || files.Length == 0) && formats.Contains(DataFormats.Files) && await cb.GetDataAsync(DataFormats.Files) is IEnumerable<IStorageItem> items)
+            if ((files == null || files.Length == 0) && formats.Contains(DataFormat.File) && await cb.TryGetFilesAsync() is { } items)
                 files = items.Select(i => i.TryGetLocalPath()).Where(p => p != null).ToArray();
-            if (formats.Contains(KdeCut) && await cb.GetDataAsync(KdeCut) is { } k) move |= AsText(k).Trim() == "1";
+            if (formats.Contains(KdeCutFormat) && await cb.TryGetValueAsync(KdeCutFormat) is { } k) move |= AsText(k).Trim() == "1";
             return (files ?? Array.Empty<string>(), move);
         }
         catch { return (Array.Empty<string>(), false); }

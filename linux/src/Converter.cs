@@ -77,7 +77,7 @@ public static class Converter
         if (maxSide > 0 && Math.Max(original.Width, original.Height) > maxSide)
         {
             double s = (double)maxSide / Math.Max(original.Width, original.Height);
-            frame = original.Resize(new SKImageInfo((int)Math.Round(original.Width * s), (int)Math.Round(original.Height * s)), SKFilterQuality.High);
+            frame = original.Resize(new SKImageInfo((int)Math.Round(original.Width * s), (int)Math.Round(original.Height * s)), new SKSamplingOptions(SKCubicResampler.Mitchell));
         }
         try
         {
