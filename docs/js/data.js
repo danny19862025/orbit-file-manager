@@ -277,7 +277,82 @@ export const CLI_COMMANDS_LINUX = [
   { cmd: "orbit --space ~/Downloads", desc: "Open the interactive Disk Space Map for a folder" },
   { cmd: "orbit --convert video.mkv", desc: "Open Convert directly (ffmpeg / ImageMagick)" },
   { cmd: "orbit --lock ~/Private", desc: "Encrypt to .orbitlock (100% compatible with Windows)" },
-  { cmd: "./install.sh --default", desc: "Install to ~/.local/opt/orbit (no root) & set as default file manager" },
+  { cmd: "~/.local/opt/orbit/install.sh --default", desc: "Make Orbit your default app for folders" },
+  { cmd: "~/.local/opt/orbit/uninstall.sh --purge", desc: "Uninstall Orbit (add --purge to remove settings & index)" },
+];
+
+export const LINUX_INSTALL_TABS = {
+  install: {
+    label: "1. Install",
+    copy: "cd ~/Downloads && wget https://github.com/danny19862025/orbit-file-manager/releases/latest/download/Orbit-1.0.0-linux-x64.tar.gz && tar xf Orbit-1.0.0-linux-x64.tar.gz && cd Orbit-1.0.0-linux-x64 && ./install.sh",
+    lines: [
+      "# Check 64-bit x86 (should print x86_64)",
+      "uname -m",
+      "# Download & unpack (no wget? use curl -LO)",
+      "cd ~/Downloads",
+      "wget https://github.com/danny19862025/orbit-file-manager/releases/latest/download/Orbit-1.0.0-linux-x64.tar.gz",
+      "tar xf Orbit-1.0.0-linux-x64.tar.gz && cd Orbit-1.0.0-linux-x64",
+      "./install.sh   # installs to ~/.local/opt/orbit (no root)",
+    ]
+  },
+  verify: {
+    label: "2. Verify SHA256",
+    copy: "cd ~/Downloads && wget https://github.com/danny19862025/orbit-file-manager/releases/latest/download/SHA256SUMS.txt && sha256sum -c --ignore-missing SHA256SUMS.txt",
+    lines: [
+      "# Optional: verify download integrity against SHA256SUMS.txt",
+      "cd ~/Downloads",
+      "wget https://github.com/danny19862025/orbit-file-manager/releases/latest/download/SHA256SUMS.txt",
+      "sha256sum -c --ignore-missing SHA256SUMS.txt",
+      "# Expected output: Orbit-1.0.0-linux-x64.tar.gz: OK",
+    ]
+  },
+  defaultApp: {
+    label: "3. PATH & Default",
+    copy: "~/.local/opt/orbit/install.sh --default",
+    lines: [
+      "# Make Orbit your default app for folders:",
+      "~/.local/opt/orbit/install.sh --default",
+      "# If `orbit` says command not found, add ~/.local/bin to PATH:",
+      "echo 'export PATH=\"$HOME/.local/bin:$PATH\"' >> ~/.bashrc  # bash",
+      "echo 'export PATH=\"$HOME/.local/bin:$PATH\"' >> ~/.zshrc   # zsh",
+      "fish_add_path ~/.local/bin                                # fish",
+    ]
+  },
+  uninstall: {
+    label: "4. Update / Uninstall",
+    copy: "~/.local/opt/orbit/uninstall.sh",
+    lines: [
+      "# Update: download new .tar.gz, unpack, and re-run ./install.sh (keeps settings)",
+      "# Uninstall (removes program, launcher, `orbit` cmd & icon; keeps settings):",
+      "~/.local/opt/orbit/uninstall.sh",
+      "# Uninstall AND delete settings + search index:",
+      "~/.local/opt/orbit/uninstall.sh --purge",
+    ]
+  }
+};
+
+export const LINUX_DISTRO_HELPERS = {
+  arch: {
+    label: "Arch / Manjaro / EndeavourOS",
+    cmd: "sudo pacman -S --needed mpv ffmpeg poppler imagemagick gvfs gvfs-smb udisks2 rclone fuse3"
+  },
+  debian: {
+    label: "Debian / Ubuntu / Mint / Pop!_OS",
+    cmd: "sudo apt install mpv ffmpeg poppler-utils imagemagick gvfs-backends udisks2 rclone fuse3"
+  },
+  fedora: {
+    label: "Fedora",
+    cmd: "sudo dnf install mpv ffmpeg-free poppler-utils ImageMagick gvfs-smb udisks2 rclone fuse3"
+  }
+};
+
+export const INSTALL_TROUBLESHOOTING = [
+  ["Linux: ./install.sh: Permission denied", "Execute bit was stripped by an archive tool — run bash install.sh instead."],
+  ["Linux: orbit: command not found", "Add ~/.local/bin to PATH (bash/zsh/fish) or log out and back in."],
+  ["Linux: Not in the app menu", "Log out and back in, or on KDE run kbuildsycoca6."],
+  ["Linux: Videos won't play / needs GVfs", "Install optional helpers (mpv, gvfs + gvfs-smb) using your distro one-liner above."],
+  ["Windows: SmartScreen warning", "Orbit isn't code-signed yet. Verify SHA256SUMS.txt, then click More info › Run anyway."],
+  ["Anything else", "Report a bug on GitHub and attach error.log from %AppData%\\Orbit (Windows) or ~/.config/Orbit (Linux)."],
 ];
 
 export const LINUX_PARITY_ROWS = [

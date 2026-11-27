@@ -162,7 +162,7 @@
       <div class="section-header reveal">
         <span class="section-kicker">Now on Linux · Avalonia 11</span>
         <h2 class="section-title">Orbit for Linux — Native Desktop Integration</h2>
-        <p class="section-desc">Built for KDE Plasma, GNOME, Hyprland, and other 64-bit desktops. The exact same window, views, shortcuts, themes, icon packs, and settings format — powered natively by freedesktop Trash, GVfs, udisks2, and mpv.</p>
+        <p class="section-desc">Built for 64-bit (<code>x86_64</code>) Linux desktops — KDE Plasma, GNOME, Xfce, Cinnamon, Hyprland, and more on Wayland (XWayland) or X11. Same window, views, shortcuts, themes, icon packs, and settings format — powered natively by freedesktop Trash, GVfs, udisks2, and mpv.</p>
       </div>
 
       <div class="linux-hero-grid reveal reveal-delay-1">
@@ -170,21 +170,19 @@
           <img src="screenshots/linux-grid.png" alt="Orbit for Linux running natively on desktop" data-zoom data-caption="Orbit for Linux — Native Avalonia build with freedesktop Trash, GVfs, udisks2 & compositor blur" />
         </div>
         <div class="glass" style="border-radius:var(--radius-lg);padding:24px;display:flex;flex-direction:column;gap:14px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <h3 style="font-size:1.3rem;">Zero-Root Per-User Install</h3>
-            <span class="nav-badge">No .NET Needed</span>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
+            <h3 style="font-size:1.25rem;">Step-by-Step Linux Install</h3>
+            <span class="nav-badge">No Root · No .NET</span>
           </div>
-          <p style="font-size:0.88rem;color:var(--subtext);">Installs into <code>~/.local/opt/orbit</code>, adds the app-menu <code>.desktop</code> entry and <code>orbit</code> CLI command. Remove anytime with <code>./uninstall.sh</code> (or <code>--purge</code>).</p>
-          <div class="install-snippet" id="linux-install-snippet" title="Click to copy install commands">
+          <p style="font-size:0.86rem;color:var(--subtext);">Installs for your account only: program in <code>~/.local/opt/orbit</code>, app-menu entry, <code>~/.local/bin/orbit</code> command, and hicolor icon.</p>
+          <div id="linux-install-tabs" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+          <div class="install-snippet" id="linux-install-snippet" title="Click to copy commands">
             <span class="copy-hint">Click to copy</span>
-            tar xf Orbit-1.0.0-linux-x64.tar.gz<br />
-            cd Orbit-1.0.0-linux-x64<br />
-            ./install.sh &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# per-user install<br />
-            ./install.sh --default # set default for folders
+            <pre id="linux-install-code" style="margin:0;white-space:pre-wrap;font-family:inherit;font-size:0.76rem;line-height:1.6;padding-right:74px;"></pre>
           </div>
           <ul class="feature-bullet-list">
-            <li><div><strong>Cross-Platform Vaults &amp; Config:</strong> Settings live in <code>~/.config/Orbit/settings.json</code> (identical schema) and <code>.orbitlock</code> vaults unlock across both Linux and Windows.</div></li>
-            <li><div><strong>x64 &amp; arm64 Builds:</strong> Build locally with <code>linux/build-release.sh</code> or run from source via <code>dotnet run --project linux</code>.</div></li>
+            <li><div><strong>Cross-Platform Vaults &amp; Config:</strong> Settings live in <code>~/.config/Orbit/settings.json</code> (same format as Windows) and <code>.orbitlock</code> vaults unlock on either OS.</div></li>
+            <li><div><strong>ARM / Source Builds:</strong> Run from source via <code>dotnet run --project linux</code> or package x64/arm64 with <code>linux/build-release.sh</code>.</div></li>
           </ul>
         </div>
       </div>
@@ -208,7 +206,22 @@
         </div>
       </div>
 
-      <div class="parity-table-wrap glass reveal reveal-delay-3">
+      <!-- One-Command Distro Helpers -->
+      <div class="glass reveal reveal-delay-2" style="border-radius:var(--radius-lg);padding:20px 24px;margin-bottom:28px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
+          <div>
+            <h3 style="font-size:1.05rem;">One-Command Optional Helpers by Distro</h3>
+            <p style="font-size:0.82rem;color:var(--subtext);">Orbit works without these and tells you when one is needed — pick your distro to install them all at once:</p>
+          </div>
+          <div id="distro-tabs" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+        </div>
+        <div class="install-snippet" id="distro-cmd-snippet" title="Click to copy distro helper command">
+          <span class="copy-hint">Click to copy</span>
+          <code id="distro-cmd-code" style="font-family:inherit;font-size:0.78rem;padding-right:76px;display:block;word-break:break-word;"></code>
+        </div>
+      </div>
+
+      <div class="parity-table-wrap glass reveal reveal-delay-3" style="margin-bottom:28px;">
         <h3 style="font-size:1.1rem;margin-bottom:10px;">Windows &amp; Linux Feature Parity</h3>
         <table class="parity-table">
           <thead>
@@ -220,6 +233,11 @@
           </thead>
           <tbody id="linux-parity-body"></tbody>
         </table>
+      </div>
+
+      <div class="reveal reveal-delay-3">
+        <h3 style="font-size:1.1rem;margin-bottom:12px;">Installation Troubleshooting</h3>
+        <div class="arch-grid" id="install-trouble-grid" style="margin-top:0;"></div>
       </div>
     </div>
   </section>

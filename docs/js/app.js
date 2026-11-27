@@ -10,6 +10,9 @@ import {
   CLI_COMMANDS_WINDOWS,
   CLI_COMMANDS_LINUX,
   LINUX_PARITY_ROWS,
+  LINUX_INSTALL_TABS,
+  LINUX_DISTRO_HELPERS,
+  INSTALL_TROUBLESHOOTING,
 } from './data.js';
 
 // ============================================================================
@@ -895,12 +898,71 @@ function initPlatformAndLinux() {
     });
   }
 
+  const installTabsWrap = document.getElementById('linux-install-tabs');
   const installSnippet = document.getElementById('linux-install-snippet');
-  installSnippet?.addEventListener('click', () => {
-    const cmd = 'tar xf Orbit-1.0.0-linux-x64.tar.gz && cd Orbit-1.0.0-linux-x64 && ./install.sh --default';
-    navigator.clipboard?.writeText(cmd).catch(() => {});
-    showToast('Copied Linux install commands');
-  });
+  const installCode = document.getElementById('linux-install-code');
+  if (installTabsWrap && installSnippet && installCode) {
+    let activeCopy = LINUX_INSTALL_TABS.install.copy;
+    function selectInstallTab(key) {
+      const tab = LINUX_INSTALL_TABS[key];
+      if (!tab) return;
+      activeCopy = tab.copy;
+      installTabsWrap.querySelectorAll('.pill-tab').forEach((b) => b.classList.toggle('active', b.dataset.installTab === key));
+      installCode.textContent = tab.lines.join('\n');
+    }
+    Object.entries(LINUX_INSTALL_TABS).forEach(([key, tab]) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'pill-tab';
+      btn.dataset.installTab = key;
+      btn.textContent = tab.label;
+      btn.addEventListener('click', () => selectInstallTab(key));
+      installTabsWrap.appendChild(btn);
+    });
+    installSnippet.addEventListener('click', () => {
+      navigator.clipboard?.writeText(activeCopy).catch(() => {});
+      showToast('Copied Linux command to clipboard');
+    });
+    selectInstallTab('install');
+  }
+
+  const distroTabsWrap = document.getElementById('distro-tabs');
+  const distroSnippet = document.getElementById('distro-cmd-snippet');
+  const distroCode = document.getElementById('distro-cmd-code');
+  if (distroTabsWrap && distroSnippet && distroCode) {
+    let activeDistroCmd = LINUX_DISTRO_HELPERS.arch.cmd;
+    function selectDistro(key) {
+      const d = LINUX_DISTRO_HELPERS[key];
+      if (!d) return;
+      activeDistroCmd = d.cmd;
+      distroTabsWrap.querySelectorAll('.pill-tab').forEach((b) => b.classList.toggle('active', b.dataset.distro === key));
+      distroCode.textContent = d.cmd;
+    }
+    Object.entries(LINUX_DISTRO_HELPERS).forEach(([key, d]) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'pill-tab';
+      btn.dataset.distro = key;
+      btn.textContent = d.label;
+      btn.addEventListener('click', () => selectDistro(key));
+      distroTabsWrap.appendChild(btn);
+    });
+    distroSnippet.addEventListener('click', () => {
+      navigator.clipboard?.writeText(activeDistroCmd).catch(() => {});
+      showToast('Copied distro helper command');
+    });
+    selectDistro('arch');
+  }
+
+  const troubleGrid = document.getElementById('install-trouble-grid');
+  if (troubleGrid) {
+    troubleGrid.innerHTML = INSTALL_TROUBLESHOOTING.map(([problem, fix]) => `
+      <div class="arch-card glass">
+        <code>${problem}</code>
+        <p>${fix}</p>
+      </div>
+    `).join('');
+  }
 
   const parityBody = document.getElementById('linux-parity-body');
   if (parityBody) {
