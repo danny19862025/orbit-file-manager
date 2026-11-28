@@ -10,7 +10,7 @@
     <AssemblyName>Orbit</AssemblyName>
     <RootNamespace>Orbit</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
     <Product>Orbit File Manager</Product>
   </PropertyGroup>
 

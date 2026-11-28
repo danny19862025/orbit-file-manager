@@ -5,7 +5,7 @@
 **A fast, modern file manager for Windows 10 and 11 — and Linux.**
 Tabs, four views, instant search, previews, archives, split panes, network drives, themes and icon packs — in one calm, keyboard-friendly window.
 
-[**🌐 Visit the Orbit Website**](https://danny19862025.github.io/orbit-file-manager/) · **⬇ Download:** [**Windows**](https://github.com/danny19862025/orbit-file-manager/releases/latest/download/OrbitSetup-1.0.1.exe) · [**Linux**](https://github.com/danny19862025/orbit-file-manager/releases/latest/download/Orbit-1.0.0-linux-x64.tar.gz) · [all releases](https://github.com/danny19862025/orbit-file-manager/releases/latest) · [Report a bug](https://github.com/danny19862025/orbit-file-manager/issues) · [Buy me a coffee](https://buymeacoffee.com/danny1986)
+[**🌐 Visit the Orbit Website**](https://danny19862025.github.io/orbit-file-manager/) · **⬇ Download:** [**Windows**](https://github.com/danny19862025/orbit-file-manager/releases/latest/download/OrbitSetup-1.0.2.exe) · [**Linux**](https://github.com/danny19862025/orbit-file-manager/releases/latest/download/Orbit-1.0.0-linux-x64.tar.gz) · [all releases](https://github.com/danny19862025/orbit-file-manager/releases/latest) · [Report a bug](https://github.com/danny19862025/orbit-file-manager/issues) · [Buy me a coffee](https://buymeacoffee.com/danny1986)
 
 ![Orbit](docs/screenshots/main-grid.png)
 
@@ -37,8 +37,8 @@ All files are on the [Releases page](https://github.com/danny19862025/orbit-file
 
 | Your computer | Download | What it is |
 |---|---|---|
-| Windows 10 / 11 | **[`OrbitSetup-1.0.1.exe`](https://github.com/danny19862025/orbit-file-manager/releases/latest/download/OrbitSetup-1.0.1.exe)** | The installer — **recommended**. |
-| Windows 10 / 11 | [`Orbit-1.0.1-win-x64.zip`](https://github.com/danny19862025/orbit-file-manager/releases/latest/download/Orbit-1.0.1-win-x64.zip) | Portable copy: unzip anywhere and run `Orbit.exe`. Nothing is installed. |
+| Windows 10 / 11 | **[`OrbitSetup-1.0.2.exe`](https://github.com/danny19862025/orbit-file-manager/releases/latest/download/OrbitSetup-1.0.2.exe)** | The installer — **recommended**. |
+| Windows 10 / 11 | [`Orbit-1.0.2-win-x64.zip`](https://github.com/danny19862025/orbit-file-manager/releases/latest/download/Orbit-1.0.2-win-x64.zip) | Portable copy: unzip anywhere and run `Orbit.exe`. Nothing is installed. |
 | Linux (64-bit) | **[`Orbit-1.0.0-linux-x64.tar.gz`](https://github.com/danny19862025/orbit-file-manager/releases/latest/download/Orbit-1.0.0-linux-x64.tar.gz)** | Linux package with an install script. |
 | Any | [`SHA256SUMS.txt`](https://github.com/danny19862025/orbit-file-manager/releases/latest/download/SHA256SUMS.txt) | Checksums, if you want to check your download wasn't damaged or changed. |
 
@@ -47,13 +47,13 @@ All files are on the [Releases page](https://github.com/danny19862025/orbit-file
 **Requirements:** Windows 10 (version 1903 or later) or Windows 11, 64-bit. No administrator rights needed.
 
 1. **Check your Windows.** Press <kbd>Win</kbd>+<kbd>R</kbd>, type `winver` and press <kbd>Enter</kbd> — you need Windows 10 version 1903 or newer, or Windows 11. (Almost every PC sold since 2010 is 64-bit.)
-2. **Download the installer:** [`OrbitSetup-1.0.1.exe`](https://github.com/danny19862025/orbit-file-manager/releases/latest/download/OrbitSetup-1.0.1.exe). It's saved to your **Downloads** folder.
+2. **Download the installer:** [`OrbitSetup-1.0.2.exe`](https://github.com/danny19862025/orbit-file-manager/releases/latest/download/OrbitSetup-1.0.2.exe). It's saved to your **Downloads** folder.
 3. *(Optional)* **Check the download.** Open **PowerShell** in your Downloads folder and run
    ```powershell
-   Get-FileHash .\OrbitSetup-1.0.1.exe
+   Get-FileHash .\OrbitSetup-1.0.2.exe
    ```
-   The `Hash` it prints should be the same as the `OrbitSetup-1.0.1.exe` line in [`SHA256SUMS.txt`](https://github.com/danny19862025/orbit-file-manager/releases/latest/download/SHA256SUMS.txt) (letter case doesn't matter).
-4. **Run the installer** — double-click `OrbitSetup-1.0.1.exe`.
+   The `Hash` it prints should be the same as the `OrbitSetup-1.0.2.exe` line in [`SHA256SUMS.txt`](https://github.com/danny19862025/orbit-file-manager/releases/latest/download/SHA256SUMS.txt) (letter case doesn't matter).
+4. **Run the installer** — double-click `OrbitSetup-1.0.2.exe`.
    > **If you see “Windows protected your PC”:** Orbit isn't code-signed yet, so Microsoft SmartScreen warns about it the first time.
    > Click **More info**, then **Run anyway**.
 5. **Choose your options** in the *Orbit Setup* window:
@@ -70,12 +70,12 @@ That's it. The installer also registered Orbit in **Settings › Apps**, so you 
 
 **Portable copy instead (no installer):**
 
-1. Download [`Orbit-1.0.1-win-x64.zip`](https://github.com/danny19862025/orbit-file-manager/releases/latest/download/Orbit-1.0.1-win-x64.zip).
+1. Download [`Orbit-1.0.2-win-x64.zip`](https://github.com/danny19862025/orbit-file-manager/releases/latest/download/Orbit-1.0.2-win-x64.zip).
 2. Right-click the zip › **Properties**, tick **Unblock** if it's there, then **OK** (stops Windows warning about every file inside).
 3. Right-click › **Extract All…** and choose a folder — for example a USB stick or `D:\Apps\Orbit`.
 4. Open that folder and double-click **`Orbit.exe`**. Nothing is added to the Start menu or Settings › Apps; to remove it, delete the folder.
 
-**Silent install (for scripts and IT):** `OrbitSetup-1.0.1.exe /quiet` installs with the defaults; add `/dir="D:\Apps\Orbit"` to choose the folder and `/desktop` for a desktop shortcut.
+**Silent install (for scripts and IT):** `OrbitSetup-1.0.2.exe /quiet` installs with the defaults; add `/dir="D:\Apps\Orbit"` to choose the folder and `/desktop` for a desktop shortcut.
 
 ### Linux
 
