@@ -474,7 +474,7 @@
 
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
           <StackPanel Margin="8,0,8,8">
-            <ToggleButton x:Name="TglPlaces" Style="{StaticResource SectionToggle}" Content="Places" Margin="0,2,0,2"/>
+            <ToggleButton x:Name="TglPlaces" Style="{StaticResource SectionToggle}" Tag="{Binding Places.Count}" ToolTip="Click to show or hide" Content="Places" Margin="0,2,0,2"/>
             <ItemsControl ItemsSource="{Binding Places}" ItemTemplate="{StaticResource SideTemplate}" Focusable="False"
                           Visibility="{Binding IsChecked, ElementName=TglPlaces, Converter={StaticResource BoolVis}}"/>
             <Border x:Name="PlacesDropHint" Visibility="Collapsed" AllowDrop="True" Margin="0,4,0,2" Padding="10,8" CornerRadius="8"
@@ -487,7 +487,7 @@
             </Border>
 
             <StackPanel x:Name="SecBookmarks">
-            <ToggleButton x:Name="TglBookmarks" Style="{StaticResource SectionToggle}" Content="Bookmarks"/>
+            <ToggleButton x:Name="TglBookmarks" Style="{StaticResource SectionToggle}" Tag="{Binding Bookmarks.Count}" ToolTip="Click to show or hide" Content="Bookmarks"/>
             <StackPanel Visibility="{Binding IsChecked, ElementName=TglBookmarks, Converter={StaticResource BoolVis}}">
               <TextBlock Text="No bookmarks — press ☆ or Ctrl+D" Foreground="{DynamicResource MutedBrush}" FontSize="12.5" Margin="10,4,0,4"
                          Visibility="{Binding Bookmarks.Count, Converter={StaticResource CountVis}, ConverterParameter=zero}"/>
@@ -496,7 +496,7 @@
             </StackPanel>
 
             <StackPanel x:Name="SecTags">
-            <ToggleButton x:Name="TglTags" Style="{StaticResource SectionToggle}" Content="Tags"/>
+            <ToggleButton x:Name="TglTags" Style="{StaticResource SectionToggle}" Tag="{Binding TagItems.Count}" ToolTip="Click to show or hide" Content="Tags"/>
             <StackPanel Visibility="{Binding IsChecked, ElementName=TglTags, Converter={StaticResource BoolVis}}">
               <TextBlock Text="No tags — right-click a file › Tags" Foreground="{DynamicResource MutedBrush}" FontSize="12.5" Margin="10,4,0,4"
                          Visibility="{Binding TagItems.Count, Converter={StaticResource CountVis}, ConverterParameter=zero}"/>
@@ -505,14 +505,14 @@
             </StackPanel>
 
             <StackPanel x:Name="SecDrives">
-            <ToggleButton x:Name="TglDrives" Style="{StaticResource SectionToggle}" Content="Drives"/>
+            <ToggleButton x:Name="TglDrives" Style="{StaticResource SectionToggle}" Tag="{Binding Drives.Count}" ToolTip="Click to show or hide" Content="Drives"/>
             <ItemsControl ItemsSource="{Binding Drives}" ItemTemplate="{StaticResource SideTemplate}" Focusable="False"
                           Visibility="{Binding IsChecked, ElementName=TglDrives, Converter={StaticResource BoolVis}}"/>
             </StackPanel>
 
             <StackPanel x:Name="SecNetwork">
             <StackPanel Visibility="{Binding Network.Count, Converter={StaticResource CountVis}}">
-              <ToggleButton x:Name="TglNetwork" Style="{StaticResource SectionToggle}" Content="Network"/>
+              <ToggleButton x:Name="TglNetwork" Style="{StaticResource SectionToggle}" Tag="{Binding Network.Count}" ToolTip="Click to show or hide" Content="Network"/>
               <ItemsControl ItemsSource="{Binding Network}" ItemTemplate="{StaticResource SideTemplate}" Focusable="False"
                             Visibility="{Binding IsChecked, ElementName=TglNetwork, Converter={StaticResource BoolVis}}"/>
             </StackPanel>
@@ -520,7 +520,7 @@
 
             <StackPanel x:Name="SecRecent">
             <StackPanel Visibility="{Binding Recent.Count, Converter={StaticResource CountVis}}">
-              <ToggleButton x:Name="TglRecent" Style="{StaticResource SectionToggle}" Content="Recent"/>
+              <ToggleButton x:Name="TglRecent" Style="{StaticResource SectionToggle}" Tag="{Binding Recent.Count}" ToolTip="Click to show or hide" Content="Recent"/>
               <ItemsControl ItemsSource="{Binding Recent}" ItemTemplate="{StaticResource SideTemplate}" Focusable="False"
                             Visibility="{Binding IsChecked, ElementName=TglRecent, Converter={StaticResource BoolVis}}"/>
             </StackPanel>

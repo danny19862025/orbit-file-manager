@@ -168,11 +168,17 @@
               <DockPanel>
                 <TextBlock x:Name="Chev" DockPanel.Dock="Right" Text="&#xE70D;" FontFamily="{StaticResource IconFont}"
                            FontSize="11" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5"/>
+                <Border x:Name="CountBadge" DockPanel.Dock="Right" Visibility="Collapsed" CornerRadius="8" Padding="7,0" Margin="0,0,8,0" MinWidth="20"
+                        Background="{DynamicResource HoverBg}" VerticalAlignment="Center">
+                  <TextBlock Text="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}" FontSize="11" FontWeight="Normal"
+                             Foreground="{DynamicResource MutedBrush}" HorizontalAlignment="Center"/>
+                </Border>
                 <ContentPresenter VerticalAlignment="Center"/>
               </DockPanel>
             </Border>
             <ControlTemplate.Triggers>
               <Trigger Property="IsChecked" Value="False">
+                <Setter TargetName="CountBadge" Property="Visibility" Value="Visible"/>
                 <Setter TargetName="Chev" Property="RenderTransform">
                   <Setter.Value>
                     <RotateTransform Angle="-90"/>
