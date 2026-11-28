@@ -109,9 +109,24 @@ public sealed class SearchIndex
         return false;
     }
 
+    /// <summary>Cloud apps that show up as a "fixed disk" (Google Drive for desktop mounts G: as FAT32, for example).
+    /// Walking them means asking the cloud about every file, which is slow and keeps the sync app busy.</summary>
+    static readonly string[] CloudDriveLabels = { "Google Drive", "GoogleDrive", "Dropbox", "OneDrive", "iCloud", "pCloud", "MEGA", "Box", "Proton Drive", "Nextcloud" };
+
+    public static bool IsCloudDrive(DriveInfo d)
+    {
+        try
+        {
+            var label = d.VolumeLabel ?? "";
+            return CloudDriveLabels.Any(c => label.Equals(c, StringComparison.OrdinalIgnoreCase) || label.StartsWith(c + " ", StringComparison.OrdinalIgnoreCase))
+                   || d.DriveFormat.Equals("CloudFS", StringComparison.OrdinalIgnoreCase);
+        }
+        catch { return false; }
+    }
+
     public static IEnumerable<string> IndexedRoots() =>
         DriveInfo.GetDrives()
-            .Where(d => { try { return d.IsReady && (d.DriveType == DriveType.Fixed || d.DriveType == DriveType.Removable); } catch { return false; } })
+            .Where(d => { try { return d.IsReady && (d.DriveType == DriveType.Fixed || d.DriveType == DriveType.Removable) && !IsCloudDrive(d); } catch { return false; } })
             .Select(d => d.RootDirectory.FullName);
 
     /// <summary>Walks every local drive. Runs on a background thread; the index is searchable as it grows.</summary>
@@ -173,7 +188,7 @@ public sealed class SearchIndex
     // Cache on disk
     // ---------------------------------------------------------------------
     const int Magic = 0x4F524258; // "ORBX"
-    const int FormatVersion = 1;
+    const int FormatVersion = 2; // 2: cloud drives (Google Drive etc.) are no longer indexed
 
     public void Save(string file)
     {
@@ -243,7 +258,8 @@ public static class SearchService
             }
             catch (Exception ex) { AppSettings.LogError(ex); }
             StartWatchers();
-            bool stale = Current == null || DateTime.UtcNow - Current.BuiltUtc > TimeSpan.FromHours(6);
+            // live changes are followed by the watchers, so a full walk once a day is plenty
+            bool stale = Current == null || DateTime.UtcNow - Current.BuiltUtc > TimeSpan.FromHours(24);
             if (stale) Rebuild();
         });
     }
@@ -259,6 +275,8 @@ public static class SearchService
         var ct = buildCts.Token;
         var thread = new Thread(() =>
         {
+            // Windows "background mode": low CPU, disk and memory priority, so a rebuild never slows the PC down.
+            try { SetThreadPriority(GetCurrentThread(), THREAD_MODE_BACKGROUND_BEGIN); } catch { }
             var fresh = new SearchIndex();
             // With no cached index, search the one being built so results appear right away.
             if (Current == null) Current = fresh;
@@ -317,9 +335,25 @@ public static class SearchService
         }
     }
 
+    /// <summary>Busy folders that churn files all day (temp files, caches, logs) — not worth tracking for search.</summary>
+    static readonly string[] NoisyParts =
+    {
+        @"\AppData\Local\Temp\", @"\AppData\Local\Packages\", @"\AppData\Local\Microsoft\", @"\AppData\Roaming\Microsoft\",
+        @"\Cache\", @"\Caches\", @"\cache2\", @"\Code Cache\", @"\GPUCache\", @"\ShaderCache\", @"\INetCache\", @"\CrashDumps\",
+        @"\Logs\", @"\$Recycle.Bin\", @"\ProgramData\", @"\Windows\", @"\.git\", @"\node_modules\", @"\obj\", @"\bin\Debug\", @"\bin\Release\"
+    };
+
+    static bool IsNoisy(string path)
+    {
+        foreach (var p in NoisyParts)
+            if (path.IndexOf(p, StringComparison.OrdinalIgnoreCase) >= 0) return true;
+        return path.EndsWith(".tmp", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".temp", StringComparison.OrdinalIgnoreCase)
+            || path.EndsWith(".crdownload", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".part", StringComparison.OrdinalIgnoreCase);
+    }
+
     static void OnAdded(string path)
     {
-        if (SearchIndex.IsSkippedPath(path)) return;
+        if (IsNoisy(path) || SearchIndex.IsSkippedPath(path)) return;
         Removed.TryRemove(path, out _);
         bool dir;
         try { dir = Directory.Exists(path); } catch { dir = false; }
@@ -329,8 +363,12 @@ public static class SearchService
 
     static void OnRemoved(string path)
     {
-        if (SearchIndex.IsSkippedPath(path)) return;
+        if (IsNoisy(path) || SearchIndex.IsSkippedPath(path)) return;
         Added.TryRemove(path, out _);
         Removed[path] = 0;
     }
+
+    const int THREAD_MODE_BACKGROUND_BEGIN = 0x00010000;
+    [System.Runtime.InteropServices.DllImport("kernel32.dll")] static extern IntPtr GetCurrentThread();
+    [System.Runtime.InteropServices.DllImport("kernel32.dll")] static extern bool SetThreadPriority(IntPtr thread, int priority);
 }
