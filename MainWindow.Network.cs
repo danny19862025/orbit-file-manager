@@ -122,9 +122,40 @@ public partial class MainWindow
         {
             var err = await NetMount.Connect(s, Hwnd);
             if (err == "") return;
-            if (err != null) { Toast("Couldn't connect: " + err); return; }
+            if (err != null)
+            {
+                // A common mix-up: the machine has no Windows file sharing at all, but it does run SSH. Offer to switch.
+                if (s.Protocol == "smb" && !await PortOpen(s.Host, 445) && !await PortOpen(s.Host, 139) && await PortOpen(s.Host, 22))
+                {
+                    var r = MessageBox.Show(this,
+                        $"{s.Host} doesn't share files with Windows file sharing (SMB) — but it does accept SSH.\n\n" +
+                        "Connect with SFTP (SSH) instead? You'll sign in with your user name and password on that machine.",
+                        "Connect to " + s.Host, MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes);
+                    if (r == MessageBoxResult.Yes)
+                    {
+                        s.Protocol = "sftp";
+                        s.Port = 0;
+                        if (S.Servers.Contains(s)) { SaveSoon(); RebuildNetwork(); }
+                        await ConnectServer(s, newTab, password);
+                    }
+                    return;
+                }
+                Toast("Couldn't connect: " + err);
+                return;
+            }
             Go(s.Location, newTab);
         }
+    }
+
+    static async Task<bool> PortOpen(string host, int port)
+    {
+        try
+        {
+            using var c = new System.Net.Sockets.TcpClient();
+            var connect = c.ConnectAsync(host, port);
+            return await Task.WhenAny(connect, Task.Delay(1500)) == connect && c.Connected;
+        }
+        catch { return false; }
     }
 
     void Go(string path, bool newTab)
@@ -147,13 +178,18 @@ public partial class MainWindow
             }
             catch (SshAuthenticationException)
             {
-                var who = $"{(string.IsNullOrWhiteSpace(s.User) ? Environment.UserName : s.User)}@{s.Host}";
+                var user = string.IsNullOrWhiteSpace(s.User) ? Environment.UserName : s.User;
                 var msg = password == null
-                    ? $"Enter the password for {who}."
-                    : $"The server didn't accept that for {who}. Try again.";
-                var dlg = new ConnectDialog(this, "Sign in to " + s.Host, msg);
+                    ? $"Sign in to {s.Host}."
+                    : $"The server didn't accept that for {user}@{s.Host}. Check the user name and password.";
+                var dlg = new ConnectDialog(this, "Sign in to " + s.Host, msg, user);
                 if (dlg.ShowDialog() != true) return "";
                 password = dlg.Password;
+                if (!string.IsNullOrEmpty(dlg.SignInUser) && dlg.SignInUser != user)
+                {
+                    s.User = dlg.SignInUser; // remembered for saved servers
+                    if (S.Servers.Contains(s)) { SaveSoon(); RebuildNetwork(); }
+                }
             }
             catch (Exception ex)
             {

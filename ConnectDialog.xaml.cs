@@ -39,8 +39,11 @@ public partial class ConnectDialog : Window
         Loaded += (_, _) => HostBox.Focus();
     }
 
-    /// <summary>Password-only prompt for an SFTP server.</summary>
-    public ConnectDialog(Window owner, string title, string message)
+    /// <summary>The user name typed in the sign-in prompt (null when it wasn't shown).</summary>
+    public string SignInUser { get; private set; }
+
+    /// <summary>Sign-in prompt for an SFTP server: user name (when <paramref name="user"/> is given) and password.</summary>
+    public ConnectDialog(Window owner, string title, string message, string user = null)
     {
         InitializeComponent();
         Owner = owner;
@@ -51,6 +54,11 @@ public partial class ConnectDialog : Window
         FullForm.Visibility = Visibility.Collapsed;
         SavePanel.Visibility = Visibility.Collapsed;
         PwLabel.Text = "Password or key passphrase (not saved)";
+        if (user != null)
+        {
+            SignInUserPanel.Visibility = Visibility.Visible;
+            SignInUserBox.Text = user;
+        }
         Loaded += (_, _) => PwBox.Focus();
     }
 
@@ -161,6 +169,11 @@ public partial class ConnectDialog : Window
         Password = PwBox.Password;
         if (passwordOnly)
         {
+            if (SignInUserPanel.Visibility == Visibility.Visible)
+            {
+                SignInUser = SignInUserBox.Text.Trim();
+                if (SignInUser.Length == 0) { ShowError("Enter your user name on the server."); return; }
+            }
             DialogResult = true;
             return;
         }
@@ -179,9 +192,23 @@ public partial class ConnectDialog : Window
         }
 
         var host = HostBox.Text.Trim();
-        // Be forgiving about pasted addresses like \\nas\share, smb://nas/share or user@host
-        foreach (var prefix in new[] { "smb://", "sftp://", "ssh://", "https://", "http://", "dav://", "davs://" })
-            if (host.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)) host = host[prefix.Length..];
+        var proto = Proto;
+        bool https = HttpsCheck.IsChecked == true;
+        // Be forgiving about pasted addresses like \\nas\share, smb://nas/share, ssh://user@host or user@host —
+        // and let an address that says what it is pick the type, so an SSH server is never saved as SMB.
+        foreach (var (prefix, kind, secure) in new[]
+                 {
+                     ("smb://", "smb", false), ("sftp://", "sftp", false), ("ssh://", "sftp", false), ("https://", "webdav", true),
+                     ("http://", "webdav", false), ("davs://", "webdav", true), ("dav://", "webdav", false)
+                 })
+            if (host.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            {
+                host = host[prefix.Length..];
+                proto = kind;
+                if (kind == "webdav") https = secure;
+                break;
+            }
+        if (host.StartsWith(@"\\")) proto = "smb";
         host = host.TrimStart('\\', '/');
         string extraPath = null;
         int slash = host.IndexOfAny(new[] { '/', '\\' });
@@ -199,9 +226,18 @@ public partial class ConnectDialog : Window
             ShowError("The port must be a number between 1 and 65535.");
             return;
         }
+        // Port 22 is SSH — Windows file sharing can't use it, so that's an SFTP server.
+        if (proto == "smb" && port == 22) proto = "sftp";
+        if (proto == "smb" && port == 445) port = 0;
+        if (proto == "smb" && port > 0)
+        {
+            ShowError($"Windows file sharing (SMB) always uses port 445, so leave Port empty. If {host} is an SSH server, choose SFTP (SSH) instead.");
+            return;
+        }
+
         var path = PathBox.Text.Trim();
         if (path.Length == 0 && extraPath != null) path = extraPath;
-        if (Proto == "smb" && path.Trim('/', '\\').Length == 0)
+        if (proto == "smb" && path.Trim('/', '\\').Length == 0)
         {
             ShowError("Enter the share name, e.g. \"public\" or \"media/movies\".");
             return;
@@ -209,12 +245,12 @@ public partial class ConnectDialog : Window
 
         Result = new ServerEntry
         {
-            Protocol = Proto,
+            Protocol = proto,
             Host = host,
             Port = port,
             User = user,
             Path = path,
-            Https = HttpsCheck.IsChecked == true,
+            Https = https,
             KeyFile = string.IsNullOrWhiteSpace(KeyBox.Text) ? null : KeyBox.Text.Trim(),
             Name = string.IsNullOrWhiteSpace(NameBox.Text) ? null : NameBox.Text.Trim()
         };

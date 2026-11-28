@@ -133,6 +133,12 @@
         </StackPanel>
       </StackPanel>
 
+      <!-- sign-in prompt only: lets you fix the user name (it defaults to your Windows name, which servers often don't have) -->
+      <StackPanel x:Name="SignInUserPanel" Visibility="Collapsed">
+        <TextBlock Style="{StaticResource Label}" Text="User name on the server"/>
+        <TextBox x:Name="SignInUserBox" Style="{StaticResource Field}"/>
+      </StackPanel>
+
       <StackPanel x:Name="PasswordPanel">
         <TextBlock x:Name="PwLabel" Style="{StaticResource Label}" Text="Password (not saved)"/>
         <PasswordBox x:Name="PwBox" Style="{StaticResource PwBox}"/>

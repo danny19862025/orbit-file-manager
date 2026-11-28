@@ -74,6 +74,8 @@ public sealed class AppSettings
         HiddenSections ??= new();
         Keymap ??= new();
         Servers.RemoveAll(s => s == null || string.IsNullOrWhiteSpace(s.Host));
+        // Older versions could save an SSH server (port 22) as SMB, which can never connect — it's SFTP.
+        foreach (var s in Servers) if (s.Protocol == "smb" && s.Port == 22) s.Protocol = "sftp";
         Theme = Orbit.Themes.Find(Theme).Name;
         Transparency = Math.Clamp(Transparency, 5, 90);
         if (Orbit.IconPack.Find(IconPack) == null) IconPack = Orbit.IconPack.Material;
