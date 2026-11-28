@@ -2078,9 +2078,8 @@ public partial class MainWindow : Window
     /// the Windows dialog is one click away inside it, and is used directly for things Orbit can't describe.</summary>
     void ShowPropertiesFor(string path)
     {
-        // a whole drive is better served by Windows' own dialog (used / free space chart) than by counting every file
-        bool driveRoot = path != null && !IsTag(path) && !IsRemote(path) && IOPath.GetPathRoot(path)?.TrimEnd('\\') == path.TrimEnd('\\');
-        var item = path == null || driveRoot || IsTag(path) || IsRemote(path) ? null : FileItem.TryFromPath(path);
+        // drives get Orbit's drive view (used / free ring, no file counting); see PropertiesWindow.BuildDrive
+        var item = path == null || IsTag(path) || IsRemote(path) ? null : FileItem.TryFromPath(path);
         if (item != null) new PropertiesWindow(this, new List<FileItem> { item }).Show();
         else ShowWindowsProperties(path);
     }

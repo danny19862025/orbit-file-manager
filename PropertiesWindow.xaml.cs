@@ -51,11 +51,28 @@ public partial class PropertiesWindow : Window
         return v;
     }
 
+    /// <summary>The drive a path is the root of ("C:\"), or null.</summary>
+    static DriveInfo DriveOf(FileItem f)
+    {
+        if (f.IsRemote || f.InArchive || !f.IsDir) return null;
+        try
+        {
+            var root = Path.GetPathRoot(f.FullPath);
+            if (string.IsNullOrEmpty(root) || root.StartsWith(@"\\") ||
+                !string.Equals(root.TrimEnd('\\'), f.FullPath.TrimEnd('\\'), StringComparison.OrdinalIgnoreCase)) return null;
+            var d = new DriveInfo(root);
+            return d.IsReady ? d : null;
+        }
+        catch { return null; }
+    }
+
     void Build()
     {
         bool single = items.Count == 1;
         var first = items[0];
         bool remote = items.Any(i => i.IsRemote);
+
+        if (single && DriveOf(first) is { } drive) { BuildDrive(drive, first); return; }
 
         if (single)
         {
@@ -127,6 +144,106 @@ public partial class PropertiesWindow : Window
         WinPropsBtn.Visibility = remote ? Visibility.Collapsed : Visibility.Visible;
 
         if (needsScan) _ = ScanAsync(fileBytes);
+    }
+
+    // ---------- drives ----------
+    /// <summary>A whole drive: label, type, file system and a used / free ring — no file counting.</summary>
+    void BuildDrive(DriveInfo d, FileItem item)
+    {
+        string letter = d.Name.TrimEnd('\\');
+        string label = string.IsNullOrWhiteSpace(d.VolumeLabel) ? DriveKind(d.DriveType) : d.VolumeLabel;
+        TitleText.Text = $"{label} ({letter}) — Properties";
+        NameBox.Text = $"{label} ({letter})";
+        KindText.Text = DriveKind(d.DriveType);
+        BigIcon.Source = (ImageSource)Native.GetShellImage(d.Name, (int)Math.Round(56 * IconService.Scale), Native.SIIGBF_ICONONLY) ?? item.LargeIcon;
+
+        long total = d.TotalSize, free = d.TotalFreeSpace, used = Math.Max(0, total - free);
+        AddRow("Type", DriveKind(d.DriveType));
+        AddRow("File system", d.DriveFormat);
+        AddRow("Location", d.Name);
+
+        var accent = (Brush)FindResource("AccentBrush");
+        var track = (Brush)FindResource("TrackBrush");
+        var grid = new Grid();
+        grid.ColumnDefinitions.Add(new ColumnDefinition());
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+        var legend = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+        legend.Children.Add(LegendRow(accent, "Used space", used));
+        legend.Children.Add(LegendRow(track, "Free space", free));
+        legend.Children.Add(new Border { Height = 1, Margin = new Thickness(0, 6, 0, 10), Background = (Brush)FindResource("LineBrush") });
+        legend.Children.Add(LegendRow(null, "Capacity", total));
+        grid.Children.Add(legend);
+
+        double frac = total > 0 ? (double)used / total : 0;
+        var ring = new Grid { Width = 128, Height = 128, Margin = new Thickness(20, 0, 0, 0) };
+        ring.Children.Add(Arc(1.0, track));
+        if (frac > 0) ring.Children.Add(Arc(Math.Max(frac, 0.005), accent));
+        var pct = new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+        pct.Children.Add(new TextBlock { Text = $"{frac * 100:0}%", FontSize = 22, FontWeight = FontWeights.SemiBold, HorizontalAlignment = HorizontalAlignment.Center });
+        var sub = new TextBlock { Text = "used", HorizontalAlignment = HorizontalAlignment.Center };
+        sub.SetResourceReference(TextBlock.ForegroundProperty, "MutedBrush");
+        pct.Children.Add(sub);
+        ring.Children.Add(pct);
+        Grid.SetColumn(ring, 1);
+        grid.Children.Add(ring);
+        DrivePanel.Children.Add(grid);
+
+        var analyze = new Button { Content = "Analyze disk space", Style = (Style)FindResource("DlgButton"), HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 14, 0, 0) };
+        analyze.Click += (_, _) => { main.OpenSpace(d.Name); Close(); };
+        DrivePanel.Children.Add(analyze);
+        DrivePanel.Visibility = Visibility.Visible;
+
+        AttrPanel.Visibility = Visibility.Collapsed; // drives have no Read-only / Hidden switches
+        WinPropsBtn.Visibility = Visibility.Visible; // Tools, Hardware, Sharing, Security… live there
+    }
+
+    static string DriveKind(DriveType t) => t switch
+    {
+        DriveType.Fixed => "Local Disk",
+        DriveType.Removable => "Removable Disk",
+        DriveType.Network => "Network Drive",
+        DriveType.CDRom => "CD / DVD Drive",
+        DriveType.Ram => "RAM Disk",
+        _ => "Drive"
+    };
+
+    FrameworkElement LegendRow(Brush swatch, string label, long bytes)
+    {
+        var row = new DockPanel { Margin = new Thickness(0, 0, 0, 8) };
+        var size = new TextBlock { Text = Fmt.Size(bytes), FontWeight = FontWeights.SemiBold, Margin = new Thickness(12, 0, 0, 0) };
+        DockPanel.SetDock(size, Dock.Right);
+        row.Children.Add(size);
+        if (swatch != null)
+        {
+            var sw = new Border { Width = 12, Height = 12, CornerRadius = new CornerRadius(3), Background = swatch, Margin = new Thickness(0, 0, 10, 0), VerticalAlignment = VerticalAlignment.Center };
+            row.Children.Add(sw);
+        }
+        var text = new StackPanel();
+        text.Children.Add(new TextBlock { Text = label });
+        var exact = new TextBlock { Text = $"{bytes:N0} bytes", FontSize = 11.5 };
+        exact.SetResourceReference(TextBlock.ForegroundProperty, "MutedBrush");
+        text.Children.Add(exact);
+        row.Children.Add(text);
+        return row;
+    }
+
+    /// <summary>A ring segment from 12 o'clock, clockwise, covering <paramref name="fraction"/> of the circle.</summary>
+    static FrameworkElement Arc(double fraction, Brush brush)
+    {
+        const double size = 128, thick = 18, r = (size - thick) / 2, c = size / 2;
+        if (fraction >= 0.9999)
+            return new System.Windows.Shapes.Ellipse { Width = size - thick, Height = size - thick, Stroke = brush, StrokeThickness = thick };
+        double a = fraction * 2 * Math.PI;
+        var start = new Point(c, c - r);
+        var end = new Point(c + r * Math.Sin(a), c - r * Math.Cos(a));
+        var fig = new PathFigure { StartPoint = start, IsClosed = false };
+        fig.Segments.Add(new ArcSegment(end, new Size(r, r), 0, fraction > 0.5, SweepDirection.Clockwise, true));
+        return new System.Windows.Shapes.Path
+        {
+            Data = new PathGeometry(new[] { fig }), Stroke = brush, StrokeThickness = thick,
+            StrokeStartLineCap = PenLineCap.Round, StrokeEndLineCap = PenLineCap.Round, Width = size, Height = size
+        };
     }
 
     void TryAddImageInfo(FileItem f)
